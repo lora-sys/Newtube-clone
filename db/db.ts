@@ -1,8 +1,6 @@
 import { drizzle } from "drizzle-orm/neon-http";
 
 import { neon } from "@neondatabase/serverless";
-import { config } from "dotenv";
-config({ path: ".env.local" }); // or .env.local
 
 // Force IPv4 to avoid IPv6 timeout in WSL2
 const sql = neon(process.env.DATABASE_URL!);

@@ -27,23 +27,37 @@ export const baseProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(
   async function isAuthed(opts) {
     const { ctx } = opts;
+    console.log("🔐 protectedProcedure - ctx.clerkUserId:", ctx.clerkUserId);
+    
     if (!ctx.clerkUserId) {
+      console.error("❌ 未找到 clerkUserId");
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
+    
     const [user] = await db
       .select()
       .from(users)
       .where(eq(users.clerkId, ctx.clerkUserId))
       .limit(1);
 
+    console.log("👤 数据库查询结果 user:", user);
+
     if (!user) {
+      console.error("❌ 未找到用户记录");
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    const { success } = await ratelimit.limit(user.id);
-    if (!success) {
-      throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+    // 速率限制检查，如果 Redis 不可用则跳过
+    try {
+      const { success } = await ratelimit.limit(user.id);
+      if (!success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+      }
+    } catch (error) {
+      // Redis 连接失败时，记录日志但不阻止请求
+      console.error("Rate limit check failed:", error);
     }
+
     return opts.next({
       ctx: {
         ...ctx,
