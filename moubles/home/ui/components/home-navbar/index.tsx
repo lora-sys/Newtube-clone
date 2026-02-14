@@ -13,7 +13,7 @@ export const HomeNavbar = () => {
             {/** logo and menu */}
             <div className="flex items-center gap-1">
            <Image src="/logo.svg" alt="logo" width={32} height={32} />
-           <p className="font-semibold text-xl ">Newtube</p>     
+           <p className="font-semibold text-xl tracking-tight ">Newtube</p>     
             </div>
             </Link> 
             </div>
