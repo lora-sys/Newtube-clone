@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
       allowedOrigins: ["localhost:3000"],
     },
   },
+  images :{
+   remotePatterns : [
+    {
+      protocol : "https",
+      hostname : "image.mux.com"
+    }
+   ]
+  }
 };
 
 export default nextConfig;
