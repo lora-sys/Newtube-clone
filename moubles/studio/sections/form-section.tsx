@@ -40,7 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { z } from "zod";
-import { videos, videoUpdateSchema } from "@/db/schema";
+import {  videoUpdateSchema } from "@/db/schema";
 import { toast } from "sonner";
 import { VideoPlayer } from "@/moubles/videos/ui/components/video-player";
 import Link from "next/link";
@@ -277,7 +277,6 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
                           Public
                         </div>
                       </SelectItem>
-
                       <SelectItem value="private">
                         <div className="flex items-center">
                           <LockIcon className="size-4 mr-2" />
@@ -286,6 +285,9 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    Public videos can be viewed by anyone. Private videos are only accessible to you.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
