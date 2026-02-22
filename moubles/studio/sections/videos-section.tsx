@@ -113,7 +113,7 @@ export const VideosSectionSupense = () => {
               .flatMap((page) => page.items)
               .map((video) => (
                 <Link
-                  href={`/studio/${video.id}`}
+                  href={`/studio/videos/${video.id}`}
                   key={video.id}
                   legacyBehavior
                 >

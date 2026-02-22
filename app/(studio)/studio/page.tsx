@@ -1,5 +1,5 @@
 import { DEFAULT_LIMIT } from "@/constants";
-import { StudioView } from "@/moubles/studio/view/studio-view";
+import { StudioView } from "@/moubles/studio/views/studio-view";
 import { HydrateClient,trpc } from "@/trpc/server";
 
  const Page = async () =>{

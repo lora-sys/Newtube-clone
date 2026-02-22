@@ -1,9 +1,25 @@
 import { db } from "@/db/db";
 import { videos } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import {  z } from "zod";
-import {eq , and , or ,lt , desc} from "drizzle-orm"
+import { z } from "zod";
+import { eq, and, or, lt, desc } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 export const studioRouter = createTRPCRouter({
+  getOne: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { id } = input;
+      const [video] = await db
+        .select()
+        .from(videos)
+        .where(and(eq(videos.id, id), eq(videos.userId, userId)));
+
+      if (!video) {
+        throw new TRPCError({ code: "NOT_FOUND" }); 
+      }
+      return video;
+    }),
   getMany: protectedProcedure
 
     .input(
@@ -40,18 +56,17 @@ export const studioRouter = createTRPCRouter({
         .orderBy(desc(videos.updateAt), desc(videos.id))
         .limit(limit + 1);
       // check if more data
-       const hasMore = data.length  > limit
+      const hasMore = data.length > limit;
       // if have, pop out last data
-       const items = hasMore ? data.slice(0,-1) : data;
+      const items = hasMore ? data.slice(0, -1) : data;
 
       const lastItem = items[items.length - 1];
-       const nextCursor = hasMore ?
-       {
-        id : lastItem.id,
-        updateAt : lastItem.updateAt,
-       }
-        :
-        null;
+      const nextCursor = hasMore
+        ? {
+            id: lastItem.id,
+            updateAt: lastItem.updateAt,
+          }
+        : null;
 
       return {
         items,
