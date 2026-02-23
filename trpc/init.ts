@@ -1,7 +1,7 @@
 import { db } from "@/db/db";
 import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
@@ -28,23 +28,51 @@ export const protectedProcedure = t.procedure.use(
   async function isAuthed(opts) {
     const { ctx } = opts;
     console.log("🔐 protectedProcedure - ctx.clerkUserId:", ctx.clerkUserId);
-    
+
     if (!ctx.clerkUserId) {
       console.error("❌ 未找到 clerkUserId");
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    
+
+    const clerkUserId: string = ctx.clerkUserId;
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.clerkId, ctx.clerkUserId))
+      .where(eq(users.clerkId, clerkUserId))
       .limit(1);
 
     console.log("👤 数据库查询结果 user:", user);
 
     if (!user) {
-      console.error("❌ 未找到用户记录");
-      throw new TRPCError({ code: "UNAUTHORIZED" });
+      // 开发环境下自动创建用户记录
+      console.warn("⚠️ 用户记录不存在，尝试创建...");
+      try {
+        const client = await clerkClient();
+        const clerkUser = await client.users.getUser(clerkUserId);
+        
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            clerkId: clerkUser.id,
+            name: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || clerkUser.id,
+            imageUrl: clerkUser.imageUrl,
+          })
+          .returning();
+        
+        if (!newUser) {
+          throw new Error("Failed to create user");
+        }
+        
+        return opts.next({
+          ctx: {
+            ...ctx,
+            user: newUser,
+          },
+        });
+      } catch (err) {
+        console.error("❌ 自动创建用户失败:", err);
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found in database" });
+      }
     }
 
     // 速率限制检查，如果 Redis 不可用则跳过

@@ -1,5 +1,6 @@
 import { videos } from "@/db/schema";
 import { formatDuration } from "@/lib/utils";
+import { THUMBNAIL_FLLBACK } from "@/moubles/studio/constants";
 import Image from "next/image";
 
 interface VideoThumbnailProps {
@@ -20,7 +21,7 @@ export const VideoThumbnail = ({
       {/** Thumbnail wrapper */}
       <div className="relative w-full overflow-hidden rounded-xl aspect-video ">
         <Image
-          src={imageurl ?? "/placeholder.svg"}
+          src={imageurl || THUMBNAIL_FLLBACK}
           alt="Thumbnail"
           fill
           className="h-full w-full object-cover group-hover:opacity-0"

@@ -6,6 +6,7 @@ interface VideoPlayerProps {
     onPlay? : ()=>void;
  }
 
+import { THUMBNAIL_FLLBACK } from "@/moubles/studio/constants";
 import MuxPlayer from "@mux/mux-player-react"
  export  const VideoPlayer = ({
     playbackId,
@@ -19,7 +20,7 @@ import MuxPlayer from "@mux/mux-player-react"
     return (
         <MuxPlayer 
         playbackId={playbackId}
-        poster={thumbnailUrl || "/placeholder.svg"}
+        poster={thumbnailUrl || THUMBNAIL_FLLBACK}
         playerInitTime={0}
         autoPlay={autoPlay}
         thumbnailTime={0}
