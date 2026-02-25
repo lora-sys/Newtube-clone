@@ -1,4 +1,3 @@
-import { videos } from "@/db/schema";
 import { formatDuration } from "@/lib/utils";
 import { THUMBNAIL_FLLBACK } from "@/moubles/studio/constants";
 import Image from "next/image";
@@ -15,7 +14,6 @@ export const VideoThumbnail = ({
   previewUrl,
   duration,
 }: VideoThumbnailProps) => {
-  console.log(videos.duration);
   return (
     <div className="relative group">
       {/** Thumbnail wrapper */}

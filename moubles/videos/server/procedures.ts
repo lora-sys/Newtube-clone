@@ -1,17 +1,65 @@
 import { db } from "@/db/db";
 import { videos, videoUpdateSchema } from "@/db/schema";
 import { mux } from "@/lib/mux";
+import { workflow } from "@/lib/workflow";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { eq, and } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
-import {  z } from "zod";
+import { z } from "zod";
 
 export const updateVideoSchema = videoUpdateSchema
   .omit({ id: true })
   .extend({ id: z.string() });
 
 export const videosRouter = createTRPCRouter({
+      generateDescription: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.QSTASH_WORKFLOW_URL}/api/videos/workflows/description`,
+        body: { userId, videoId: input.id },
+      });
+      return workflowRunId;
+    }),
+    generateTitle: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.QSTASH_WORKFLOW_URL}/api/videos/workflows/title`,
+        body: { userId, videoId: input.id },
+      });
+      return workflowRunId;
+    }),
+  generateThumbnail: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        prompt : z.string().min(10).max(500),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+
+      const { workflowRunId } = await workflow.trigger({
+        url: `${process.env.QSTASH_WORKFLOW_URL}/api/videos/workflows/thumbnail`,
+        body: { userId, videoId: input.id ,prompt : input.prompt},
+      });
+      return workflowRunId;
+    }),
+
   restoreThumbnail: protectedProcedure
     .input(
       z.object({
@@ -46,13 +94,15 @@ export const videosRouter = createTRPCRouter({
       }
       const utapi = new UTApi();
       const tempThumbnailurl = `https://image.mux.com/${existingVideo.muxPlaybackId}/thumbnail.jpg`;
-      const uploadedThumbnail = await utapi.uploadFilesFromUrl(tempThumbnailurl);
+      const uploadedThumbnail =
+        await utapi.uploadFilesFromUrl(tempThumbnailurl);
 
       if (!uploadedThumbnail.data) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
 
-      const { key: thumbnailKey, ufsUrl: thumbnailurl } = uploadedThumbnail.data;
+      const { key: thumbnailKey, ufsUrl: thumbnailurl } =
+        uploadedThumbnail.data;
 
       const [updateVideo] = await db
         .update(videos)
