@@ -1,10 +1,10 @@
 import { db } from "@/db/db";
-import { videos, videoUpdateSchema } from "@/db/schema";
+import { users, videos, videoUpdateSchema } from "@/db/schema";
 import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/workflow";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, getTableColumns } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -13,7 +13,29 @@ export const updateVideoSchema = videoUpdateSchema
   .extend({ id: z.string() });
 
 export const videosRouter = createTRPCRouter({
-      generateDescription: protectedProcedure
+  getOne: baseProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const [existingVideo] = await db
+        .select(
+          {
+            ...getTableColumns(videos),
+            user: {
+              ...getTableColumns(users)
+            }
+          }
+        )
+        .from(videos)
+        .innerJoin(users, eq(videos.userId, users.id))
+        .where(eq(videos.id, input.id))
+
+      if (!existingVideo) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return existingVideo;
+    }),
+  generateDescription: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -28,7 +50,7 @@ export const videosRouter = createTRPCRouter({
       });
       return workflowRunId;
     }),
-    generateTitle: protectedProcedure
+  generateTitle: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -47,7 +69,7 @@ export const videosRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        prompt : z.string().min(10).max(500),
+        prompt: z.string().min(10).max(500),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -55,7 +77,7 @@ export const videosRouter = createTRPCRouter({
 
       const { workflowRunId } = await workflow.trigger({
         url: `${process.env.QSTASH_WORKFLOW_URL}/api/videos/workflows/thumbnail`,
-        body: { userId, videoId: input.id ,prompt : input.prompt},
+        body: { userId, videoId: input.id, prompt: input.prompt },
       });
       return workflowRunId;
     }),
