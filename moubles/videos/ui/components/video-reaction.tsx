@@ -8,6 +8,7 @@ import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
 
 
+
 interface videoReactionProps {
     videoId : string;
     likes : number;
@@ -22,6 +23,7 @@ export const VideoReactions = ({
     dislikes,
     viewerReaction
 }:videoReactionProps) => {
+
     const clerk = useClerk();
     const utils = trpc.useUtils();
     const like = trpc.videoReactions.like.useMutation({
@@ -56,7 +58,7 @@ export const VideoReactions = ({
             onClick={() => like.mutate({ videoId })}
             disabled={like.isPending || dislike.isPending}
             >
-                <ThumbsUpIcon className={cn("size-5",viewerReaction === "like"&& "fill-black" )}/>
+                <ThumbsUpIcon className={cn("size-5",viewerReaction === "like" && "fill-black" )}/>
                 {likes}
             </Button>
             <Separator orientation="vertical" className="h-7"/>
@@ -66,7 +68,7 @@ export const VideoReactions = ({
             onClick={() => dislike.mutate({ videoId })}
             disabled={like.isPending || dislike.isPending}
             >
-                <ThumbsDownIcon className={cn("size-5",viewerReaction === "dislike"&& "fill-black" )}/>
+                <ThumbsDownIcon className={cn("size-5",viewerReaction === "dislike" && "fill-black" )}/>
                 {dislikes}
             </Button>
         </div>

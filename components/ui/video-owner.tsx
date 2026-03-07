@@ -45,6 +45,7 @@ export const VideoOwner = ({ user, videoId, subscriberCount, isSubscribed }: Vid
                 <SubscriptionButton
                     creatorId={user.id}
                     isSubscribed={isSubscribed}
+                    fromVideoId={videoId}
                     className="flex"
                 />
             )}

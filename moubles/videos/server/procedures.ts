@@ -4,7 +4,7 @@ import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/workflow";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { eq, and, getTableColumns, inArray } from "drizzle-orm";
+import { eq, and, getTableColumns, inArray, sql } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -74,7 +74,7 @@ export const videosRouter = createTRPCRouter({
             ),
             viewerReaction: viewerReactions.type,
             subscriberCount: db.$count(subscriptions, eq(subscriptions.creatorId, videos.userId)),
-            isSubscribed: db.$count(viewerSubscriptions, eq(viewerSubscriptions.creatorId, videos.userId)),
+            isSubscribed: sql<boolean>`${viewerSubscriptions.creatorId} IS NOT NULL`.as("is_subscribed"),
           }
         )
         .from(videos)

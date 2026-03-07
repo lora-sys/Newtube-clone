@@ -102,7 +102,8 @@ export const videoRelations = relations(videos, ({ one, many }) => ({
     references: [categories.id],
   }),
   views : many(videosViews),
-  videoReactions : many(videoReactions)
+  videoReactions : many(videoReactions),
+  comments : many(comments)
 }));
 
 
@@ -195,3 +196,61 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
 export const subscriptionsInsertSchema = createInsertSchema(subscriptions);
 export const subscriptionsSelectSchema = createSelectSchema(subscriptions);
 export const subscriptionsUpdateSchema = createUpdateSchema(subscriptions);
+
+
+
+
+
+export const comments = pgTable("comments", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId : uuid("user_id").references(()=>users.id,{onDelete : "cascade"}).notNull(),
+    videoId : uuid("video_id").references(()=>videos.id,{onDelete : "cascade"}).notNull(),
+    value : text("value").notNull(),
+    createAt: timestamp("create_at").defaultNow().notNull(),
+    updateAt: timestamp("update_at").defaultNow().notNull(),
+})
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+  video: one(videos, {
+    fields: [comments.videoId],
+    references: [videos.id],
+  }),
+  commentReactions: many(commentReactions),
+}));
+
+export const commentsInsertSchema = createInsertSchema(comments);
+export const commentsSelectSchema = createSelectSchema(comments);
+export const commentsUpdateSchema = createUpdateSchema(comments);
+
+// Comment Reactions
+export const commentReactions = pgTable("comment_reactions", {
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  commentId: uuid("comment_id").references(() => comments.id, { onDelete: "cascade" }).notNull(),
+  type: reactionType("type").notNull(),
+  createAt: timestamp("create_at").defaultNow().notNull(),
+  updateAt: timestamp("update_at").defaultNow().notNull(),
+}, (t) => [
+  primaryKey({
+    name: "comment_reactions_pk",
+    columns: [t.userId, t.commentId]
+  }),
+])
+
+export const commentReactionsRelations = relations(commentReactions, ({ one }) => ({
+  user: one(users, {
+    fields: [commentReactions.userId],
+    references: [users.id],
+  }),
+  comment: one(comments, {
+    fields: [commentReactions.commentId],
+    references: [comments.id],
+  }),
+}));
+
+export const commentReactionsInsertSchema = createInsertSchema(commentReactions);
+export const commentReactionsSelectSchema = createSelectSchema(commentReactions);
+export const commentReactionsUpdateSchema = createUpdateSchema(commentReactions);

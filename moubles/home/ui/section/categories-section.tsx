@@ -5,6 +5,7 @@ import { trpc } from "@/trpc/client";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "@/components/ui/error-boundary";
 
 interface CategorySectionProps {
   categoryId?: string;
@@ -15,7 +16,9 @@ export const CategoriesSection = ({ categoryId }: CategorySectionProps) => {
     <Suspense
       fallback={<FilterCarouse isLoading data={[]} onSelect={() => {}} />}
     >
-      <ErrorBoundary fallback={<p>Error</p>}>
+      <ErrorBoundary fallbackRender={({ error, resetErrorBoundary }) => (
+        <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} message="Failed to load categories" />
+      )}>
         <CategoriesSectionSuspense categoryId={categoryId} />
       </ErrorBoundary>
     </Suspense>

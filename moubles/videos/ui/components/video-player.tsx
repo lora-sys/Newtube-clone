@@ -8,6 +8,12 @@ interface VideoPlayerProps {
 
 import { THUMBNAIL_FLLBACK } from "@/moubles/studio/constants";
 import MuxPlayer from "@mux/mux-player-react"
+
+
+export const VideoPlayerSkeleton = () => {
+    return <div className="aspect-video bg-black rounded-xl"/>
+}
+
  export  const VideoPlayer = ({
     playbackId,
     thumbnailUrl,

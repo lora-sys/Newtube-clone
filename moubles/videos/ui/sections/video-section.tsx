@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { VideoPlayer } from "../components/video-player";
+import { ErrorFallback } from "@/components/ui/error-boundary";
+import { VideoPlayer, VideoPlayerSkeleton } from "../components/video-player";
 import { VideoBanner } from "@/components/ui/video-banner";
-import { VideoTopRow } from "@/components/ui/video-top-row";
+import { VideoTopRow, VideoTopRowSkeleton } from "@/components/ui/video-top-row";
 import { useAuth } from "@clerk/nextjs";
 
 interface VideoSectionProps {
@@ -17,8 +18,10 @@ interface VideoSectionProps {
 
 export const VideoSection = ({videoId} : VideoSectionProps) => {
 return (
-    <Suspense fallback={<p>loading...</p>}>
-        <ErrorBoundary fallback={<p>Error</p>}>
+    <Suspense fallback={<VideoSectionSkeleton/>}>
+        <ErrorBoundary fallbackRender={({ error, resetErrorBoundary }) => (
+            <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} message="Failed to load video" />
+        )}>
             <VideoSectionSuspense videoId={videoId}/>
         </ErrorBoundary>
     </Suspense>
@@ -26,6 +29,14 @@ return (
 
 }
 
+const VideoSectionSkeleton = () => {
+    return (
+        <>
+         <VideoPlayerSkeleton/>
+         <VideoTopRowSkeleton/>
+        </>
+    )
+}
 
 const VideoSectionSuspense = ({videoId} : VideoSectionProps) => {
 

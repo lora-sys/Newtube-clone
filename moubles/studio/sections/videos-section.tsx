@@ -5,6 +5,7 @@ import { DEFAULT_LIMIT } from "@/constants";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "@/components/ui/error-boundary";
 import {
   Table,
   TableBody,
@@ -22,7 +23,9 @@ import { Globe2Icon, LockIcon } from "lucide-react";
 export const VideosSection = () => {
   return (
     <Suspense fallback={<VideoSectionSkeleton />}>
-      <ErrorBoundary fallback={<p>Error</p>}>
+      <ErrorBoundary fallbackRender={({ error, resetErrorBoundary }) => (
+        <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} message="Failed to load videos" />
+      )}>
         <VideosSectionSupense />
       </ErrorBoundary>
     </Suspense>
