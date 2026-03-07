@@ -6,6 +6,7 @@ import {
   uniqueIndex,
   integer,
   pgEnum,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import {
@@ -29,6 +30,9 @@ export const users = pgTable(
 
 export const userRelations = relations(users, ({ many }) => ({
   videos: many(videos),
+  videosViews : many(videosViews),
+  videoReactions : many(videoReactions),
+  subscriptions: many(subscriptions),
 }));
 
 export const categories = pgTable(
@@ -82,7 +86,7 @@ export const videoInsertSchema = createInsertSchema(videos);
 export const videoSelectSchema = createSelectSchema(videos);
 export const videoUpdateSchema = createUpdateSchema(videos);
 
-export const videlRelations = relations(videos, ({ one, many }) => ({
+export const videoRelations = relations(videos, ({ one, many }) => ({
   users: one(users, {
     fields: [videos.userId],
     references: [users.id],
@@ -91,4 +95,95 @@ export const videlRelations = relations(videos, ({ one, many }) => ({
     fields: [videos.categoryId],
     references: [categories.id],
   }),
+  views : many(videosViews),
+  videoReactions : many(videoReactions)
 }));
+
+
+export const videosViews = pgTable("video_views",{
+  userId : uuid("user_id").references(()=>users.id,{onDelete : "cascade"}).notNull(),
+  videoId : uuid("video_id").references(()=>videos.id,{onDelete : "cascade"}).notNull(),
+  createAt: timestamp("create_at").defaultNow().notNull(),
+  updateAt: timestamp("update_at").defaultNow().notNull(),
+},(t)=> [
+  primaryKey({
+    name : "video_views_pk",
+    columns : [t.userId,t.videoId]
+  }),
+])
+
+
+export const videoViewsRelations = relations(videosViews, ({ one }) => ({
+  users: one(users, {
+    fields: [videosViews.userId],
+    references: [users.id],
+  }),
+  videos: one(videos, {
+    fields: [videosViews.videoId],
+    references: [videos.id],
+  }),
+}));
+
+export const videoViewInsertSchema = createInsertSchema(videosViews);
+export const videoViewSelectSchema = createSelectSchema(videosViews);
+export const videoViewUpdateSchema = createUpdateSchema(videosViews);
+
+export const reactionType = pgEnum ("reaction_type",["like","dislike"])
+
+export const videoReactions = pgTable("video_reactions",{
+  userId : uuid("user_id").references(()=>users.id,{onDelete : "cascade"}).notNull(),
+  videoId : uuid("video_id").references(()=>videos.id,{onDelete : "cascade"}).notNull(),
+  type : reactionType("type").notNull(),
+  createAt: timestamp("create_at").defaultNow().notNull(),
+  updateAt: timestamp("update_at").defaultNow().notNull(),
+},(t)=> [
+  primaryKey({
+    name : "video_reactions_pk",
+    columns : [t.userId,t.videoId]
+  }),
+])
+
+export const videoReactionRelations = relations(videoReactions, ({ one }) => ({
+  users: one(users, {
+    fields: [videoReactions.userId],
+    references: [users.id],
+  }),
+  videos: one(videos, {
+    fields: [videoReactions.videoId],
+    references: [videos.id],
+  }),
+}));
+
+
+
+export const videoReactionsInsertSchema = createInsertSchema(videoReactions);
+export const videoReactionsSelectSchema = createSelectSchema(videoReactions);
+export const videoReactionsUpdateSchema = createUpdateSchema(videoReactions);
+
+// Subscriptions
+export const subscriptions = pgTable("subscriptions", {
+  viewerId: uuid("viewer_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  creatorId: uuid("creator_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createAt: timestamp("create_at").defaultNow().notNull(),
+  updateAt: timestamp("update_at").defaultNow().notNull(),
+}, (t) => [
+  primaryKey({
+    name: "subscriptions_pk",
+    columns: [t.viewerId, t.creatorId]
+  }),
+])
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  viewer: one(users, {
+    fields: [subscriptions.viewerId],
+    references: [users.id],
+  }),
+  creator: one(users, {
+    fields: [subscriptions.creatorId],
+    references: [users.id],
+  }),
+}));
+
+export const subscriptionsInsertSchema = createInsertSchema(subscriptions);
+export const subscriptionsSelectSchema = createSelectSchema(subscriptions);
+export const subscriptionsUpdateSchema = createUpdateSchema(subscriptions);

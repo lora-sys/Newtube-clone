@@ -9,46 +9,46 @@ import { UserInfo } from "@/moubles/users/ui/components/user-info";
 
 
 interface VideoOwnerProps {
-    user : VideoGetOneOutput["user"];
-    videoId : string;
+    user: VideoGetOneOutput["user"];
+    videoId: string;
+    subscriberCount: number;
+    isSubscribed: boolean;
 }
 
 
 
-export const VideoOwner = ({user,videoId}:VideoOwnerProps) => {
- 
-   const {userId : clerkUserId} = useAuth();
+export const VideoOwner = ({ user, videoId, subscriberCount, isSubscribed }: VideoOwnerProps) => {
+
+    const { userId: clerkUserId } = useAuth();
     return (
-    <div className="flex items-center sm:items-start justify-between sm:justify-start gap-3 min-w-0">
-        <Link href={`/users/${user.id}`}>
-        <div className="flex items-center gap-3 min-w-0">
-           <UserAvatar size="lg" imageurl={user.imageUrl} name={user.name}  />
-           <div className="flex flex-col min-w-0 gap-1">
-           <UserInfo size="lg" name={user.name}/>
-           <span className="text-sm text-muted-foreground  line-clamp-1">
-            {/** add subscriber count */}
-            {0} subscribers
-           </span>
-              </div>
-        </div>
-        </Link>
-        { clerkUserId === user.clerkId ? (
-              <Button
-              asChild
-              variant="secondary"
-              className="rounded-full"
-              >
+        <div className="flex items-center sm:items-start justify-between sm:justify-start gap-3 min-w-0">
+            <Link href={`/users/${user.id}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                    <UserAvatar size="lg" imageurl={user.imageUrl} name={user.name} />
+                    <div className="flex flex-col min-w-0 gap-1">
+                        <UserInfo size="lg" name={user.name} />
+                        <span className="text-sm text-muted-foreground line-clamp-1">
+                            {subscriberCount} subscribers
+                        </span>
+                    </div>
+                </div>
+            </Link>
+            {clerkUserId === user.clerkId ? (
+                <Button
+                    asChild
+                    variant="secondary"
+                    className="rounded-full"
+                >
                     <Link href={`/studio/videos/${videoId}`}>Edit video</Link>
-              </Button>
-        ) :  (
-             <SubscriptionButton
-             onClick={()=>{}}
-             disabled={false}
-             isSubscried={false}
-             className="flex"
-             />
-        ) }
-    </div>
-)
+                </Button>
+            ) : (
+                <SubscriptionButton
+                    creatorId={user.id}
+                    isSubscribed={isSubscribed}
+                    className="flex"
+                />
+            )}
+        </div>
+    )
 }
 
