@@ -205,6 +205,7 @@ export const comments = pgTable("comments", {
     id: uuid("id").primaryKey().defaultRandom(),
     userId : uuid("user_id").references(()=>users.id,{onDelete : "cascade"}).notNull(),
     videoId : uuid("video_id").references(()=>videos.id,{onDelete : "cascade"}).notNull(),
+    parentId: uuid("parent_id"),
     value : text("value").notNull(),
     createAt: timestamp("create_at").defaultNow().notNull(),
     updateAt: timestamp("update_at").defaultNow().notNull(),
@@ -218,6 +219,14 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   video: one(videos, {
     fields: [comments.videoId],
     references: [videos.id],
+  }),
+  parent: one(comments, {
+    fields: [comments.parentId],
+    references: [comments.id],
+    relationName: "comment_replies",
+  }),
+  replies: many(comments, {
+    relationName: "comment_replies",
   }),
   commentReactions: many(commentReactions),
 }));

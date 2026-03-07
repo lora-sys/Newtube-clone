@@ -76,6 +76,7 @@ const CommentListSuspense = ({ videoId }: CommentListProps) => {
                         likeCount={comment.likeCount}
                         dislikeCount={comment.dislikeCount}
                         viewerReaction={comment.viewerReaction}
+                        replyCount={comment.replyCount}
                     />
                 ))}
             <InfiniteScroll

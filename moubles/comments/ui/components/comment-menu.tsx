@@ -16,9 +16,10 @@ interface CommentMenuProps {
     commentId: string;
     commentValue: string;
     onEdit?: () => void;
+    parentId?: string;
 }
 
-export const CommentMenu = ({ commentId, commentValue, onEdit }: CommentMenuProps) => {
+export const CommentMenu = ({ commentId, commentValue, onEdit, parentId }: CommentMenuProps) => {
     const clerk = useClerk();
     const utils = trpc.useUtils();
 
@@ -26,6 +27,9 @@ export const CommentMenu = ({ commentId, commentValue, onEdit }: CommentMenuProp
         onSuccess: () => {
             toast.success("Comment deleted");
             utils.comments.getMany.invalidate();
+            if (parentId) {
+                utils.comments.getReplies.invalidate({ parentId });
+            }
         },
         onError: (error) => {
             if (error.data?.code === "UNAUTHORIZED") {

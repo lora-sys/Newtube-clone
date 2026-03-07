@@ -6,6 +6,8 @@ import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { CommentMenu } from "./comment-menu";
 import { CommentReaction } from "./comment-reaction";
+import { ReplySection } from "./reply-section";
+import { ReplyForm } from "./reply-form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ interface CommentItemProps {
     likeCount: number;
     dislikeCount: number;
     viewerReaction?: "like" | "dislike" | null;
+    replyCount: number;
 }
 
 export const CommentItem = ({
@@ -38,9 +41,11 @@ export const CommentItem = ({
     likeCount,
     dislikeCount,
     viewerReaction,
+    replyCount,
 }: CommentItemProps) => {
     const utils = trpc.useUtils();
     const [isEditing, setIsEditing] = useState(false);
+    const [isReplying, setIsReplying] = useState(false);
     const [editValue, setEditValue] = useState(value);
 
     const update = trpc.comments.update.useMutation({
@@ -75,59 +80,80 @@ export const CommentItem = ({
     const isOwner = viewerId === userId;
 
     return (
-        <div className="group flex gap-3 py-2">
-            <UserAvatar
-                size="lg"
-                imageurl={user.imageUrl}
-                name={user.name}
-                className="shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{user.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(createAt, { addSuffix: true })}
-                        </span>
+        <div className="group py-2">
+            <div className="flex gap-3">
+                <UserAvatar
+                    size="lg"
+                    imageurl={user.imageUrl}
+                    name={user.name}
+                    className="shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{user.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(createAt, { addSuffix: true })}
+                            </span>
+                        </div>
+                        {isOwner && !isEditing && (
+                            <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <CommentMenu
+                                    commentId={id}
+                                    commentValue={value}
+                                    onEdit={handleEdit}
+                                />
+                            </div>
+                        )}
                     </div>
-                    {isOwner && !isEditing && (
-                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <CommentMenu
+                    {isEditing ? (
+                        <div className="space-y-2 mt-2">
+                            <Textarea
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className="min-h-[80px] resize-none"
+                                placeholder="Edit your comment..."
+                            />
+                            <div className="flex gap-2">
+                                <Button size="sm" onClick={handleSave} disabled={update.isPending}>
+                                    Save
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={handleCancel} disabled={update.isPending}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="mt-1">
+                            <p className="text-sm whitespace-pre-wrap break-words">{value}</p>
+                            <CommentReaction
                                 commentId={id}
-                                commentValue={value}
-                                onEdit={handleEdit}
+                                likes={likeCount}
+                                dislikes={dislikeCount}
+                                viewerReaction={viewerReaction}
+                                onReply={() => setIsReplying(!isReplying)}
+                            />
+                        </div>
+                    )}
+                    {isReplying && !isEditing && (
+                        <div className="mt-3 ml-2">
+                            <ReplyForm
+                                videoId={videoId}
+                                parentId={id}
+                                onCancel={() => setIsReplying(false)}
                             />
                         </div>
                     )}
                 </div>
-                {isEditing ? (
-                    <div className="space-y-2 mt-2">
-                        <Textarea
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="min-h-[80px] resize-none"
-                            placeholder="Edit your comment..."
-                        />
-                        <div className="flex gap-2">
-                            <Button size="sm" onClick={handleSave} disabled={update.isPending}>
-                                Save
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={handleCancel} disabled={update.isPending}>
-                                Cancel
-                            </Button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="mt-1">
-                        <p className="text-sm whitespace-pre-wrap break-words">{value}</p>
-                        <CommentReaction
-                            commentId={id}
-                            likes={likeCount}
-                            dislikes={dislikeCount}
-                            viewerReaction={viewerReaction}
-                        />
-                    </div>
-                )}
+            </div>
+            {/* Reply section - indented */}
+            <div className="ml-12">
+                <ReplySection
+                    parentId={id}
+                    videoId={videoId}
+                    replyCount={replyCount}
+                    viewerId={viewerId}
+                />
             </div>
         </div>
     );

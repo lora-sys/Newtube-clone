@@ -11,6 +11,7 @@ interface CommentReactionProps {
     likes: number;
     dislikes: number;
     viewerReaction?: "like" | "dislike" | null;
+    onReply?: () => void;
 }
 
 export const CommentReaction = ({
@@ -18,6 +19,7 @@ export const CommentReaction = ({
     likes,
     dislikes,
     viewerReaction,
+    onReply,
 }: CommentReactionProps) => {
     const clerk = useClerk();
     const utils = trpc.useUtils();
@@ -25,6 +27,7 @@ export const CommentReaction = ({
     const like = trpc.commentReactions.like.useMutation({
         onSuccess: () => {
             utils.comments.getMany.invalidate();
+            utils.comments.getReplies.invalidate();
         },
         onError: (error) => {
             toast.error("Something went wrong");
@@ -37,6 +40,7 @@ export const CommentReaction = ({
     const dislike = trpc.commentReactions.dislike.useMutation({
         onSuccess: () => {
             utils.comments.getMany.invalidate();
+            utils.comments.getReplies.invalidate();
         },
         onError: (error) => {
             toast.error("Something went wrong");
@@ -80,6 +84,14 @@ export const CommentReaction = ({
                 )} />
                 {dislikes > 0 && <span>{dislikes}</span>}
             </button>
+            {onReply && (
+                <button
+                    className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={onReply}
+                >
+                    Reply
+                </button>
+            )}
         </div>
     );
 };
