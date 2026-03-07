@@ -32,7 +32,13 @@ export const userRelations = relations(users, ({ many }) => ({
   videos: many(videos),
   videosViews : many(videosViews),
   videoReactions : many(videoReactions),
-  subscriptions: many(subscriptions),
+  subscriptions: many(subscriptions,{
+    relationName : "subscriptions_viewer_id_fkey"
+  }
+  ),
+  subscribers : many(subscriptions,{
+    relationName : "subscriptions_creator_id_fkey"
+  })
 }));
 
 export const categories = pgTable(
@@ -177,10 +183,12 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   viewer: one(users, {
     fields: [subscriptions.viewerId],
     references: [users.id],
+    relationName : "subscriptions_viewer_id_fkey"
   }),
   creator: one(users, {
     fields: [subscriptions.creatorId],
     references: [users.id],
+    relationName : "subscriptions_creator_id_fkey"
   }),
 }));
 
