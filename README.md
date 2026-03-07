@@ -1,3 +1,3 @@
 # YouTube clone
 
-![Youtube clone logo][logo/logo.png]
+![Youtube clone logo](logo/logo.png)
