@@ -1,9 +1,10 @@
 import { db } from "@/db/db";
 import { users, videos,  subscriptions } from "@/db/schema";
-import { createTRPCRouter, baseProcedure } from "@/trpc/init";
+import { createTRPCRouter, baseProcedure, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { eq, and, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { UTApi } from "uploadthing/server";
 
 export const usersRouter = createTRPCRouter({
   // 获取用户信息
@@ -50,4 +51,58 @@ export const usersRouter = createTRPCRouter({
         totalViewCount: viewCountResult?.count || 0,
       };
     }),
+
+  // 更新用户信息
+  update: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).max(100).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+
+      const [updated] = await db
+        .update(users)
+        .set({
+          ...input,
+          updateAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+        .returning();
+
+      return updated;
+    }),
+
+  // 删除 banner
+  removeBanner: protectedProcedure.mutation(async ({ ctx }) => {
+    const { id: userId } = ctx.user;
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+
+    if (!user) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+    }
+
+    // 删除 UploadThing 文件
+    if (user.bannerKey) {
+      const utapi = new UTApi();
+      await utapi.deleteFiles(user.bannerKey);
+    }
+
+    // 清除数据库记录
+    const [updated] = await db
+      .update(users)
+      .set({
+        bannerUrl: null,
+        bannerKey: null,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return updated;
+  }),
 });

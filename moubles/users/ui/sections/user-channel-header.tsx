@@ -1,12 +1,14 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import { BannerUploadModal } from "../components/banner-upload-modal";
+import { CameraIcon } from "lucide-react";
 
 interface UserChannelHeaderProps {
   userId: string;
@@ -36,6 +38,8 @@ const UserChannelHeaderSkeleton = () => (
 
 const UserChannelHeaderSuspense = ({ userId }: UserChannelHeaderProps) => {
   const { userId: currentUserId } = useAuth();
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+
   const [user] = trpc.users.getOne.useSuspenseQuery({ id: userId });
 
   const isOwnChannel = currentUserId === user.clerkId;
@@ -43,7 +47,7 @@ const UserChannelHeaderSuspense = ({ userId }: UserChannelHeaderProps) => {
   return (
     <div className="flex flex-col">
       {/* Banner */}
-      <div className="relative w-full h-32 md:h-48 bg-gradient-to-r from-blue-600 to-purple-600">
+      <div className="relative w-full h-32 md:h-48 bg-gradient-to-r from-blue-600 to-purple-600 group">
         {user.bannerUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -51,6 +55,17 @@ const UserChannelHeaderSuspense = ({ userId }: UserChannelHeaderProps) => {
             alt={`${user.name}'s banner`}
             className="w-full h-full object-cover"
           />
+        )}
+        {isOwnChannel && (
+          <button
+            onClick={() => setBannerModalOpen(true)}
+            className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+          >
+            <div className="bg-black/60 text-white px-4 py-2 rounded-full flex items-center gap-2">
+              <CameraIcon className="size-4" />
+              <span className="text-sm font-medium">Change banner</span>
+            </div>
+          </button>
         )}
       </div>
 
@@ -78,6 +93,9 @@ const UserChannelHeaderSuspense = ({ userId }: UserChannelHeaderProps) => {
           <SubscribeButton userId={userId} />
         )}
       </div>
+
+      {/* Banner Upload Modal */}
+      <BannerUploadModal open={bannerModalOpen} onOpenChange={setBannerModalOpen} />
     </div>
   );
 };
