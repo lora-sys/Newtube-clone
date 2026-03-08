@@ -4,7 +4,7 @@ import { mux } from "@/lib/mux";
 import { workflow } from "@/lib/workflow";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { eq, and, getTableColumns, inArray, sql } from "drizzle-orm";
+import { eq, and, getTableColumns, inArray, sql, lt, or, desc } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 
@@ -13,21 +13,260 @@ export const updateVideoSchema = videoUpdateSchema
   .extend({ id: z.string() });
 
 export const videosRouter = createTRPCRouter({
+  // 首页视频流
+  getMany: baseProcedure
+    .input(
+      z.object({
+        categoryId: z.string().uuid().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            updateAt: z.date(),
+          })
+          .optional(),
+        limit: z.number().min(1).max(100).default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const { categoryId, cursor, limit } = input;
+
+      const data = await db
+        .select({
+          id: videos.id,
+          title: videos.title,
+          thumbnailurl: videos.thumbnailurl,
+          previewUrl: videos.previewUrl,
+          duration: videos.duration,
+          createAt: videos.createAt,
+          updateAt: videos.updateAt,
+          muxPlaybackId: videos.muxPlaybackId,
+          description: videos.description,
+          user: {
+            id: users.id,
+            name: users.name,
+            imageUrl: users.imageUrl,
+          },
+          viewCount: db.$count(videosViews, eq(videosViews.videoId, videos.id)),
+          likeCount: db.$count(
+            videoReactions,
+            and(
+              eq(videoReactions.videoId, videos.id),
+              eq(videoReactions.type, "like")
+            )
+          ),
+        })
+        .from(videos)
+        .innerJoin(users, eq(videos.userId, users.id))
+        .where(
+          and(
+            eq(videos.videoVisiblity, "public"),
+            categoryId ? eq(videos.categoryId, categoryId) : undefined,
+            cursor
+              ? or(
+                  lt(videos.updateAt, cursor.updateAt),
+                  and(
+                    eq(videos.updateAt, cursor.updateAt),
+                    lt(videos.id, cursor.id)
+                  )
+                )
+              : undefined
+          )
+        )
+        .orderBy(desc(videos.updateAt), desc(videos.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? { id: lastItem.id, updateAt: lastItem.updateAt }
+        : null;
+
+      return { items, nextCursor };
+    }),
+
+  // 热门视频
+  getTrending: baseProcedure
+    .input(
+      z.object({
+        categoryId: z.string().uuid().optional(),
+        cursor: z
+          .object({
+            id: z.string(),
+            viewCount: z.number(),
+          })
+          .optional(),
+        limit: z.number().min(1).max(100).default(10),
+      })
+    )
+    .query(async ({ input }) => {
+      const { categoryId, cursor, limit } = input;
+
+      // 子��询获取观看数
+      const videoViewsSubquery = db
+        .select({
+          videoId: videosViews.videoId,
+          viewCount: sql<number>`count(*)`.as("view_count"),
+        })
+        .from(videosViews)
+        .groupBy(videosViews.videoId)
+        .as("video_views_count");
+
+      const data = await db
+        .select({
+          id: videos.id,
+          title: videos.title,
+          thumbnailurl: videos.thumbnailurl,
+          previewUrl: videos.previewUrl,
+          duration: videos.duration,
+          createAt: videos.createAt,
+          updateAt: videos.updateAt,
+          muxPlaybackId: videos.muxPlaybackId,
+          description: videos.description,
+          user: {
+            id: users.id,
+            name: users.name,
+            imageUrl: users.imageUrl,
+          },
+          viewCount: sql<number>`coalesce(${videoViewsSubquery.viewCount}, 0)`,
+          likeCount: db.$count(
+            videoReactions,
+            and(
+              eq(videoReactions.videoId, videos.id),
+              eq(videoReactions.type, "like")
+            )
+          ),
+        })
+        .from(videos)
+        .innerJoin(users, eq(videos.userId, users.id))
+        .leftJoin(videoViewsSubquery, eq(videos.id, videoViewsSubquery.videoId))
+        .where(
+          and(
+            eq(videos.videoVisiblity, "public"),
+            categoryId ? eq(videos.categoryId, categoryId) : undefined,
+            cursor
+              ? or(
+                  lt(videoViewsSubquery.viewCount, cursor.viewCount),
+                  and(
+                    eq(videoViewsSubquery.viewCount, cursor.viewCount),
+                    lt(videos.id, cursor.id)
+                  )
+                )
+              : undefined
+          )
+        )
+        .orderBy(desc(videoViewsSubquery.viewCount), desc(videos.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? { id: lastItem.id, viewCount: lastItem.viewCount }
+        : null;
+
+      return { items, nextCursor };
+    }),
+
+  // 订阅视频
+  getSubscriptions: protectedProcedure
+    .input(
+      z.object({
+        cursor: z
+          .object({
+            id: z.string(),
+            updateAt: z.date(),
+          })
+          .optional(),
+        limit: z.number().min(1).max(100).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { cursor, limit } = input;
+      const { id: userId } = ctx.user;
+
+      // 获取用户订阅的创作者 ID
+      const userSubscriptions = await db
+        .select({ creatorId: subscriptions.creatorId })
+        .from(subscriptions)
+        .where(eq(subscriptions.viewerId, userId));
+
+      const creatorIds = userSubscriptions.map((sub) => sub.creatorId);
+
+      if (creatorIds.length === 0) {
+        return { items: [], nextCursor: null };
+      }
+
+      const data = await db
+        .select({
+          id: videos.id,
+          title: videos.title,
+          thumbnailurl: videos.thumbnailurl,
+          previewUrl: videos.previewUrl,
+          duration: videos.duration,
+          createAt: videos.createAt,
+          updateAt: videos.updateAt,
+          muxPlaybackId: videos.muxPlaybackId,
+          description: videos.description,
+          user: {
+            id: users.id,
+            name: users.name,
+            imageUrl: users.imageUrl,
+          },
+          viewCount: db.$count(videosViews, eq(videosViews.videoId, videos.id)),
+          likeCount: db.$count(
+            videoReactions,
+            and(
+              eq(videoReactions.videoId, videos.id),
+              eq(videoReactions.type, "like")
+            )
+          ),
+        })
+        .from(videos)
+        .innerJoin(users, eq(videos.userId, users.id))
+        .where(
+          and(
+            eq(videos.videoVisiblity, "public"),
+            inArray(videos.userId, creatorIds),
+            cursor
+              ? or(
+                  lt(videos.updateAt, cursor.updateAt),
+                  and(
+                    eq(videos.updateAt, cursor.updateAt),
+                    lt(videos.id, cursor.id)
+                  )
+                )
+              : undefined
+          )
+        )
+        .orderBy(desc(videos.updateAt), desc(videos.id))
+        .limit(limit + 1);
+
+      const hasMore = data.length > limit;
+      const items = hasMore ? data.slice(0, -1) : data;
+      const lastItem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? { id: lastItem.id, updateAt: lastItem.updateAt }
+        : null;
+
+      return { items, nextCursor };
+    }),
+
   getOne: baseProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const { clerkUserId } = ctx;
 
+      // 只有登录用户才查询 userId
       let userId: string | undefined;
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(
-          inArray(users.clerkId, clerkUserId ? [clerkUserId] : [])
-        );
-
-      if (user) {
-        userId = user.id;
+      if (clerkUserId) {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.clerkId, clerkUserId));
+        if (user) {
+          userId = user.id;
+        }
       }
 
       // CTE for viewer reactions
@@ -178,6 +417,8 @@ export const videosRouter = createTRPCRouter({
         throw new TRPCError({ code: "BAD_GATEWAY" })
       }
       const duration = asset?.duration ? Math.round(asset.duration) : 0;
+
+      // TODO: find a way to revalidate trackId status and trackId as well
 
       const updatedVideo = await db
         .update(videos)

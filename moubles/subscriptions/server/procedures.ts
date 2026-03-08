@@ -1,10 +1,29 @@
 import { db } from "@/db/db";
-import { subscriptions } from "@/db/schema";
+import { subscriptions, users } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const subscriptionsRouter = createTRPCRouter({
+    getMany: protectedProcedure.query(async ({ ctx }) => {
+        const { id: userId } = ctx.user;
+
+        const data = await db
+            .select({
+                creatorId: subscriptions.creatorId,
+                creator: {
+                    id: users.id,
+                    name: users.name,
+                    imageUrl: users.imageUrl,
+                },
+            })
+            .from(subscriptions)
+            .innerJoin(users, eq(subscriptions.creatorId, users.id))
+            .where(eq(subscriptions.viewerId, userId));
+
+        return data;
+    }),
+
     create: protectedProcedure
         .input(z.object({ creatorId: z.string() }))
         .mutation(async ({ input, ctx }) => {

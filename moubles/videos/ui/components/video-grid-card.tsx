@@ -12,6 +12,10 @@ import { VideoGetManyutput } from "../../type";
 interface VideoGridCardProps {
     data: VideoGetManyutput["items"][number];
     onRemove?: () => void;
+    /** 是否在稍后观看列表中 */
+    isInWatchLater?: boolean;
+    /** 从稍后观看移除后的回调 */
+    onWatchLaterRemove?: () => void;
 }
 
 export const VideoGridCardSkeleton = () => {
@@ -33,6 +37,8 @@ export const VideoGridCardSkeleton = () => {
 export const VideoGridCard = ({
     data,
     onRemove,
+    isInWatchLater = false,
+    onWatchLaterRemove,
 }: VideoGridCardProps) => {
     const compactViews = useMemo(() => {
         return Intl.NumberFormat("en", {
@@ -81,7 +87,12 @@ export const VideoGridCard = ({
                             </h3>
                         </Link>
                         <div className="shrink-0">
-                            <VideoMenu videoId={data.id} onRemove={onRemove} />
+                            <VideoMenu 
+                                videoId={data.id} 
+                                onRemove={onRemove}
+                                isInWatchLater={isInWatchLater}
+                                onWatchLaterRemove={onWatchLaterRemove}
+                            />
                         </div>
                     </div>
 

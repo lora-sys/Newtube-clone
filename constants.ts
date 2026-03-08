@@ -6,3 +6,5 @@ export const COMMENTS_LIMIT = 10;
 
 // Suggestions pagination limit
 export const SUGGESTIONS_LIMIT = 10;
+
+export const APP_URL = process.env.NEXT_PUBLIC_URL || "https://localhost:3000"

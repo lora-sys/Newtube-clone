@@ -2,7 +2,7 @@ import { db } from "@/db/db";
 import { commentReactions, comments, users } from "@/db/schema";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { eq, desc, getTableColumns, inArray, lt, and,  isNull, count } from "drizzle-orm";
+import { eq, desc, getTableColumns, inArray, lt, and, isNull, count, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const commentsRouter = createTRPCRouter({
@@ -25,7 +25,7 @@ export const commentsRouter = createTRPCRouter({
                 const [user] = await db
                     .select()
                     .from(users)
-                    .where(inArray(users.clerkId, [clerkUserId]));
+                    .where(eq(users.clerkId, clerkUserId));
                 if (user) {
                     viewerId = user.id;
                 }
@@ -39,7 +39,7 @@ export const commentsRouter = createTRPCRouter({
                         type: commentReactions.type,
                     })
                     .from(commentReactions)
-                    .where(inArray(commentReactions.userId, viewerId ? [viewerId] : []))
+                    .where(viewerId ? eq(commentReactions.userId, viewerId) : sql`false`)
             );
 
             const data = await db
@@ -133,7 +133,7 @@ export const commentsRouter = createTRPCRouter({
                 const [user] = await db
                     .select()
                     .from(users)
-                    .where(inArray(users.clerkId, [clerkUserId]));
+                    .where(eq(users.clerkId, clerkUserId));
                 if (user) {
                     viewerId = user.id;
                 }
@@ -147,7 +147,7 @@ export const commentsRouter = createTRPCRouter({
                         type: commentReactions.type,
                     })
                     .from(commentReactions)
-                    .where(inArray(commentReactions.userId, viewerId ? [viewerId] : []))
+                    .where(viewerId ? eq(commentReactions.userId, viewerId) : sql`false`)
             );
 
             const data = await db
