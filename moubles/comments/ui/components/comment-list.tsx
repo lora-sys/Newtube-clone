@@ -6,6 +6,7 @@ import { InfiniteScroll } from "@/components/ui/infinite";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ui/error-boundary";
+import { COMMENTS_LIMIT } from "@/constants";
 
 interface CommentListProps {
     videoId: string;
@@ -51,7 +52,7 @@ const CommentListSkeleton = () => {
 
 const CommentListSuspense = ({ videoId }: CommentListProps) => {
     const [comments, query] = trpc.comments.getMany.useSuspenseInfiniteQuery(
-        { videoId, limit: 10 },
+        { videoId, limit: COMMENTS_LIMIT },
         {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
         }

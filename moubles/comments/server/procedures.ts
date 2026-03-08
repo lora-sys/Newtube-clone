@@ -2,7 +2,7 @@ import { db } from "@/db/db";
 import { commentReactions, comments, users } from "@/db/schema";
 import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
-import { eq, desc, getTableColumns, inArray, lt, and, sql, isNull, count } from "drizzle-orm";
+import { eq, desc, getTableColumns, inArray, lt, and,  isNull, count } from "drizzle-orm";
 import { z } from "zod";
 
 export const commentsRouter = createTRPCRouter({
@@ -88,6 +88,8 @@ export const commentsRouter = createTRPCRouter({
                 : null;
 
             // Get reply counts for each comment
+            // use map query each comment reply through parent id 
+            // first choose id array , then map chooose each comment with reply 
             const commentIds = items.map(item => item.id);
             const replyCounts = commentIds.length > 0 
                 ? await db

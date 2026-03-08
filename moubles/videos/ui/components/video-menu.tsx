@@ -20,7 +20,7 @@ interface VideoMenuProps {
 export const VideoMenu = ({
     videoId,
     onRemove,
-    variant
+    variant= "ghost"
 }: VideoMenuProps) => {
 
  const onShare = () => {

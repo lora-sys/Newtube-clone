@@ -5,9 +5,8 @@ import { trpc } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { UserAvatar } from "@/components/user-avatar";
-import { useAuth } from "@clerk/nextjs";
 
 interface ReplyFormProps {
     videoId: string;
@@ -17,7 +16,7 @@ interface ReplyFormProps {
 
 export const ReplyForm = ({ videoId, parentId, onCancel }: ReplyFormProps) => {
     const [value, setValue] = useState("");
-    const { userId } = useAuth();
+    const { user } = useUser();
     const clerk = useClerk();
     const utils = trpc.useUtils();
 
@@ -44,11 +43,12 @@ export const ReplyForm = ({ videoId, parentId, onCancel }: ReplyFormProps) => {
 
     return (
         <div className="flex gap-3">
-            {userId && (
+            {user && (
                 <UserAvatar
-                    imageurl="/user-placeholder.svg"
-                    name="User"
+                    imageurl={user.imageUrl}
+                    name={user.fullName || "User"}
                     size="sm"
+                    className="shrink-0"
                 />
             )}
             <div className="flex-1">

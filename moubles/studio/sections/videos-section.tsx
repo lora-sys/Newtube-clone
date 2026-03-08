@@ -129,6 +129,7 @@ export const VideosSectionSupense = () => {
                             previewUrl={video.previewUrl}
                             title={video.title}
                             duration={video.duration || 0}
+                            muxPlaybackId={video.muxPlaybackId}
                           />
                         </div>
                         <div className="flex flex-col overflow-hidden gap-y-1">

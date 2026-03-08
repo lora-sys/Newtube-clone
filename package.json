@@ -7,7 +7,7 @@
     "db:studio": "NODE_OPTIONS=\"--dns-result-order=ipv4first --network-family-autoselection-attempt-timeout=5000\" bunx drizzle-kit studio",
     "dev:all": "concurrently \"bun run dev:webhook\"  \"bun run dev\"",
     "dev": "next dev",
-    "dev:webhook": "ngrok http --url=noncereal-unulcerously-isabela.ngrok-free.dev 3000",
+    "dev:webhook": "unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy && ngrok http --url=noncereal-unulcerously-isabela.ngrok-free.dev 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

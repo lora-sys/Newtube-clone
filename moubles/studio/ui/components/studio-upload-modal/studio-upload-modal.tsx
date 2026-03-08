@@ -23,7 +23,7 @@ export const StudioUploadModal = () => {
   const onSuccess  = () => {
    if(!create.data?.video.id)  return;
    create.reset();
-   router.push(`studio/videos/${create.data.video.id}`)
+   router.push(`/studio/videos/${create.data.video.id}`)
   }
   return (
     <>

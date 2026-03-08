@@ -68,23 +68,38 @@ export const POST = async (request: Request) => {
       if (!playbackId) {
         throw new Response("Missing playback Id", { status: 400 });
       }
-      const tempThumbnailurl = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
-      const tempPreviewUrl = `https://image.mux.com/${playbackId}/animated.gif`;
-      const duration = data?.duration ? Math.round(data.duration) : 0;
-      const utapi = new UTApi();
 
-       
-          
-      const [uploadThumbnailUrl, uploadPreviewUrl] =
-        await utapi.uploadFilesFromUrl([tempThumbnailurl, tempPreviewUrl]);
-      if (!uploadThumbnailUrl.data || !uploadPreviewUrl.data) {
-        return new Response("failed to upload thumbnail or preview", {
-          status: 500,
-        });
+      const muxThumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`;
+      const muxPreviewUrl = `https://image.mux.com/${playbackId}/animated.gif`;
+      const duration = data?.duration ? Math.round(data.duration) : 0;
+
+      let thumbnailurl: string = muxThumbnailUrl;
+      let previewUrl: string = muxPreviewUrl;
+      let thumbnailKey: string | null = null;
+      let previewKey: string | null = null;
+
+      // Try to upload to UploadThing (optional optimization)
+      try {
+        const utapi = new UTApi();
+        console.log("Uploading thumbnails to UploadThing...");
+        const [uploadThumbnail, uploadPreview] = await utapi.uploadFilesFromUrl([
+          muxThumbnailUrl,
+          muxPreviewUrl,
+        ]);
+
+        if (uploadThumbnail?.data && uploadPreview?.data) {
+          thumbnailKey = uploadThumbnail.data.key;
+          thumbnailurl = uploadThumbnail.data.ufsUrl;
+          previewKey = uploadPreview.data.key;
+          previewUrl = uploadPreview.data.ufsUrl;
+          console.log("Thumbnails uploaded to UploadThing successfully");
+        } else {
+          console.log("UploadThing upload incomplete, using Mux URLs as fallback");
+        }
+      } catch (error) {
+        console.error("UploadThing upload failed, using Mux URLs:", error);
       }
-      const { key: thumbnailKey, ufsUrl: thumbnailurl } =
-        uploadThumbnailUrl.data;
-      const { key: previewKey, ufsUrl: previewUrl } = uploadPreviewUrl.data;
+
       await db
         .update(videos)
         .set({

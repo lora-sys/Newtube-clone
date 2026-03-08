@@ -7,6 +7,7 @@ import { trpc } from "@/trpc/client";
 import { CommentForm } from "@/moubles/comments/ui/components/comment-form";
 import { CommentList } from "@/moubles/comments/ui/components/comment-list";
 import { Skeleton } from "@/components/ui/skeleton";
+import { COMMENTS_LIMIT } from "@/constants";
 
 interface CommentsSectionProps {
     videoId: string;
@@ -62,12 +63,17 @@ const CommentsSectionSkeleton = () => {
 };
 
 const CommentsSectionSuspense = ({ videoId }: CommentsSectionProps) => {
-    const [data] = trpc.comments.getMany.useSuspenseQuery({ videoId, limit: 10 });
+    const [data] = trpc.comments.getMany.useSuspenseInfiniteQuery(
+        { videoId, limit: COMMENTS_LIMIT },
+        { getNextPageParam: (lastPage) => lastPage.nextCursor }
+    );
+
+    const commentCount = data.pages.reduce((acc, page) => acc + page.items.length, 0);
 
     return (
         <div className="mt-6">
             <h2 className="text-lg font-medium mb-6">
-                {data.items.length} Comments
+                {commentCount} Comments
             </h2>
             <CommentForm videoId={videoId} />
             <CommentList videoId={videoId} />

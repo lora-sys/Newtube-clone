@@ -11,8 +11,21 @@ import { ReplyForm } from "./reply-form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { cva, type VariantProps } from "class-variance-authority";
 
-interface CommentItemProps {
+const commentItemVariants = cva("group py-2", {
+    variants: {
+        variant: {
+            default: "",
+            reply: "",
+        },
+    },
+    defaultVariants: {
+        variant: "default",
+    },
+});
+
+interface CommentItemProps extends VariantProps<typeof commentItemVariants> {
     id: string;
     userId: string;
     user: {
@@ -27,7 +40,8 @@ interface CommentItemProps {
     likeCount: number;
     dislikeCount: number;
     viewerReaction?: "like" | "dislike" | null;
-    replyCount: number;
+    replyCount?: number;
+    parentId?: string;
 }
 
 export const CommentItem = ({
@@ -42,16 +56,26 @@ export const CommentItem = ({
     dislikeCount,
     viewerReaction,
     replyCount,
+    parentId,
+    variant = "default",
 }: CommentItemProps) => {
     const utils = trpc.useUtils();
     const [isEditing, setIsEditing] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
     const [editValue, setEditValue] = useState(value);
 
+    const isReply = variant === "reply";
+    const isOwner = viewerId === userId;
+
     const update = trpc.comments.update.useMutation({
         onSuccess: () => {
-            toast.success("Comment updated");
-            utils.comments.getMany.invalidate({ videoId });
+            toast.success(isReply ? "Reply updated" : "Comment updated");
+            // 根据变体决定刷新哪个缓存
+            if (isReply && parentId) {
+                utils.comments.getReplies.invalidate({ parentId });
+            } else {
+                utils.comments.getMany.invalidate({ videoId });
+            }
             setIsEditing(false);
         },
         onError: () => {
@@ -71,19 +95,17 @@ export const CommentItem = ({
 
     const handleSave = () => {
         if (editValue.trim() === "") {
-            toast.error("Comment cannot be empty");
+            toast.error(isReply ? "Reply cannot be empty" : "Comment cannot be empty");
             return;
         }
         update.mutate({ id, value: editValue });
     };
 
-    const isOwner = viewerId === userId;
-
     return (
-        <div className="group py-2">
+        <div className={commentItemVariants({ variant })}>
             <div className="flex gap-3">
                 <UserAvatar
-                    size="lg"
+                    size={isReply ? "sm" : "lg"}
                     imageurl={user.imageUrl}
                     name={user.name}
                     className="shrink-0"
@@ -101,6 +123,7 @@ export const CommentItem = ({
                                 <CommentMenu
                                     commentId={id}
                                     commentValue={value}
+                                    parentId={isReply ? parentId : undefined}
                                     onEdit={handleEdit}
                                 />
                             </div>
@@ -112,7 +135,7 @@ export const CommentItem = ({
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}
                                 className="min-h-[80px] resize-none"
-                                placeholder="Edit your comment..."
+                                placeholder={isReply ? "Edit your reply..." : "Edit your comment..."}
                             />
                             <div className="flex gap-2">
                                 <Button size="sm" onClick={handleSave} disabled={update.isPending}>
@@ -146,15 +169,17 @@ export const CommentItem = ({
                     )}
                 </div>
             </div>
-            {/* Reply section - indented */}
-            <div className="ml-12">
-                <ReplySection
-                    parentId={id}
-                    videoId={videoId}
-                    replyCount={replyCount}
-                    viewerId={viewerId}
-                />
-            </div>
+            {/* Reply section - only for default variant (top-level comments) */}
+            {!isReply && replyCount !== undefined && (
+                <div className="ml-12">
+                    <ReplySection
+                        parentId={id}
+                        videoId={videoId}
+                        replyCount={replyCount}
+                        viewerId={viewerId}
+                    />
+                </div>
+            )}
         </div>
     );
 };

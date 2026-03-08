@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/trpc/client";
-import { ReplyItem } from "./reply-item";
+import { CommentItem } from "./comment-item";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -64,7 +64,7 @@ export const ReplySection = ({
                     ) : (
                         <div className="space-y-1">
                             {replies.map((reply) => (
-                                <ReplyItem
+                                <CommentItem
                                     key={reply.id}
                                     id={reply.id}
                                     userId={reply.userId}
@@ -77,6 +77,7 @@ export const ReplySection = ({
                                     videoId={videoId}
                                     viewerId={viewerId}
                                     parentId={parentId}
+                                    variant="reply"
                                 />
                             ))}
                             {hasNextPage && (
