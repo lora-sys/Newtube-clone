@@ -1,6 +1,6 @@
 import { db } from "@/db/db";
 import { subscriptions, users } from "@/db/schema";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -23,6 +23,27 @@ export const subscriptionsRouter = createTRPCRouter({
 
         return data;
     }),
+
+    check: protectedProcedure
+        .input(z.object({ creatorId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const { creatorId } = input;
+            const { id: viewerId } = ctx.user;
+
+            const [subscription] = await db
+                .select()
+                .from(subscriptions)
+                .where(
+                    and(
+                        eq(subscriptions.viewerId, viewerId),
+                        eq(subscriptions.creatorId, creatorId)
+                    )
+                );
+
+            return {
+                isSubscribed: !!subscription,
+            };
+        }),
 
     create: protectedProcedure
         .input(z.object({ creatorId: z.string() }))

@@ -71,7 +71,7 @@ export const VideoGridCard = ({
 
             {/* Info */}
             <div className="flex gap-3 mt-3">
-                <Link href={`/videos/${data.id}`} className="shrink-0">
+                <Link href={`/users/${data.user.id}`} className="shrink-0">
                     <UserAvatar
                         size="default"
                         imageurl={data.user.imageUrl ?? ""}
@@ -96,7 +96,9 @@ export const VideoGridCard = ({
                         </div>
                     </div>
 
-                    <UserInfo size="sm" name={data.user.name} />
+                    <Link href={`/users/${data.user.id}`} className="hover:text-primary transition-colors">
+                        <UserInfo size="sm" name={data.user.name} />
+                    </Link>
 
                     <p className="text-xs text-muted-foreground mt-0.5">
                         {compactViews} views · {compactLikes} likes · {relativeTime}

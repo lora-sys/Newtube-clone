@@ -223,100 +223,106 @@ return (
             }
 
 
-            {
+                        {
 
 
-                size === "default" && (
+                            size === "default" && (
 
 
-                    <>
+                                <>
 
 
-                    <div className="flex items-center gap-2 my-3">
+                                <Link href={`/users/${data.user.id}`} className="flex items-center gap-2 my-3 hover:opacity-80 transition-opacity">
 
 
-                        <UserAvatar
+                                    <UserAvatar
 
 
-                        size="sm"
+                                    size="sm"
 
 
-                        imageurl={data.user.imageUrl ?? ""}
+                                    imageurl={data.user.imageUrl ?? ""}
 
 
-                        name={data.user.name}
+                                    name={data.user.name}
 
 
-                        />
+                                    />
 
 
-                        <UserInfo size="sm" name={data.user.name} />
+                                    <UserInfo size="sm" name={data.user.name} />
 
 
-                    </div>
+                                </Link>
 
 
-                    <Tooltip>
+                                <Tooltip>
 
 
-                        <TooltipTrigger asChild>
+                                    <TooltipTrigger asChild>
 
 
-                            <p className="text-xs text-muted-foreground w-fit line-clamp-2">
+                                        <p className="text-xs text-muted-foreground w-fit line-clamp-2">
 
 
-                                {data.description ?? "No description"}
+                                            {data.description ?? "No description"}
 
 
-                            </p>
+                                        </p>
 
 
+            
 
 
-
-                        </TooltipTrigger>
-
-
-                           <TooltipContent
+                                    </TooltipTrigger>
 
 
-                           side="bottom"
+                                       <TooltipContent
 
 
-                           align="center"
+                                       side="bottom"
 
 
-                           className="bg-black/70"
+                                       align="center"
 
 
-                           >
+                                       className="bg-black/70"
 
 
-                            <p> From the video description</p>
+                                       >
 
 
-                           </TooltipContent>
+                                        <p> From the video description</p>
 
 
-                    </Tooltip>
+                                       </TooltipContent>
 
 
-                    </>
+                                </Tooltip>
 
 
-                )
+                                </>
 
 
-            }
+                            )
 
 
-            {size === "compact" && (
+                        }
 
 
-                <UserInfo size="sm" name={data.user.name} />
+                        {size === "compact" && (
 
 
-            )}
+                            <Link href={`/users/${data.user.id}`} className="hover:opacity-80 transition-opacity">
+
+
+                                <UserInfo size="sm" name={data.user.name} />
+
+
+                            </Link>
+
+
+                        )}
 
 
             {size === "compact" && (

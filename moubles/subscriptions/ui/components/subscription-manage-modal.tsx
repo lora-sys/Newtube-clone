@@ -13,6 +13,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 const SubscriptionManageModalContent = () => {
   const utils = trpc.useUtils();
@@ -46,14 +47,17 @@ const SubscriptionManageModalContent = () => {
             key={sub.creatorId}
             className="flex items-center justify-between gap-3"
           >
-            <div className="flex items-center gap-3">
+            <Link
+              href={`/users/${sub.creatorId}`}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <UserAvatar
                 size="default"
                 imageurl={sub.creator.imageUrl}
                 name={sub.creator.name}
               />
               <span className="font-medium text-sm">{sub.creator.name}</span>
-            </div>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
