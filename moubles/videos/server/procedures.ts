@@ -574,4 +574,39 @@ export const videosRouter = createTRPCRouter({
     };
   }),
 
+  // 删除视频（用于取消上传时清理）
+  removeDraft: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { id: videoId } = input;
+
+      const [video] = await db
+        .select()
+        .from(videos)
+        .where(and(eq(videos.id, videoId), eq(videos.userId, userId)));
+
+      if (!video) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Video not found" });
+      }
+
+      // 删除 Mux asset（如果存在）
+      if (video.muxAssetId) {
+        try {
+          await mux.video.assets.delete(video.muxAssetId);
+        } catch (error) {
+          // 忽略删除错误，继续删除数据库记录
+          console.error("Failed to delete Mux asset:", error);
+        }
+      }
+
+      // 删除视频记录
+      const [deleted] = await db
+        .delete(videos)
+        .where(eq(videos.id, videoId))
+        .returning();
+
+      return deleted;
+    }),
+
 });

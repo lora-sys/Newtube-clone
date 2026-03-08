@@ -10,13 +10,15 @@ import { UploadIcon} from 'lucide-react';
 
 interface StudioloaderProps {
     endpoint :  string | null;
-    onSuccess : () => void;                                                                                                             
+    onSuccess : () => void;
+    onUploadStart?: () => void;                                                                                                             
 }
 
 const UPLOADER_ID = "video-uploader";
 export const StudioUploader = ({
     endpoint,
     onSuccess,
+    onUploadStart,
 }: StudioloaderProps) => {
 return (
     <div>
@@ -24,6 +26,7 @@ return (
         id={UPLOADER_ID}
         className='hidden group/uploader '
         onSuccess={onSuccess}
+        onUploadStart={onUploadStart}
         />
         <MuxUploaderDrop muxUploader={UPLOADER_ID} className='group/drop' >
           <div slot="heading" className='flex flex-col items-center gap-6'>

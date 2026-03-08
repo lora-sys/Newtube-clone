@@ -481,4 +481,37 @@ export const playlistsRouter = createTRPCRouter({
 
       return deleted;
     }),
+
+  // ========== Playlist Modal ==========
+
+  // 获取用户的播放列表（用于添加视频模态框）
+  getManyForVideo: protectedProcedure
+    .input(z.object({ videoId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { id: userId } = ctx.user;
+      const { videoId } = input;
+
+      // 获取用户所有播放列表
+      const userPlaylists = await db
+        .select({
+          ...getTableColumns(playlists),
+          videoCount: db.$count(playlistVideos, eq(playlistVideos.playlistId, playlists.id)),
+        })
+        .from(playlists)
+        .where(eq(playlists.userId, userId))
+        .orderBy(desc(playlists.createAt));
+
+      // 获取视频已所在的播放列表 ID
+      const videoInPlaylists = await db
+        .select({ playlistId: playlistVideos.playlistId })
+        .from(playlistVideos)
+        .where(eq(playlistVideos.videoId, videoId));
+
+      const playlistIds = new Set(videoInPlaylists.map((v) => v.playlistId));
+
+      return userPlaylists.map((playlist) => ({
+        ...playlist,
+        containsVideo: playlistIds.has(playlist.id),
+      }));
+    }),
 });

@@ -8,10 +8,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVerticalIcon, ShareIcon, TrashIcon, ClockIcon, CheckIcon } from "lucide-react";
+import { MoreVerticalIcon, ShareIcon, TrashIcon, ClockIcon, CheckIcon, ListPlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { APP_URL } from "@/constants";
 import { trpc } from "@/trpc/client";
+import { PlaylistAddModal } from "@/moubles/playlists/ui/components/playlist-add-modal";
 
 interface VideoMenuProps {
     videoId: string;
@@ -23,6 +24,8 @@ interface VideoMenuProps {
     isInWatchLater?: boolean;
     /** 从稍后观看移除后的回调 */
     onWatchLaterRemove?: () => void;
+    /** 是否显示"添加到播放列表"选项 */
+    showAddToPlaylist?: boolean;
 }
 
 export const VideoMenu = ({
@@ -32,6 +35,7 @@ export const VideoMenu = ({
     showWatchLater = true,
     isInWatchLater = false,
     onWatchLaterRemove,
+    showAddToPlaylist = true,
 }: VideoMenuProps) => {
     const utils = trpc.useUtils();
 
@@ -71,48 +75,56 @@ export const VideoMenu = ({
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant={variant} size="icon" className="rounded-full">
-                    <MoreVerticalIcon />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onShare}>
-                    <ShareIcon className="mr-2 size-4" />
-                    Share
-                </DropdownMenuItem>
+        <div className="flex items-center">
+            {/* Add to Playlist Modal - always visible when showAddToPlaylist */}
+            {showAddToPlaylist && (
+                <PlaylistAddModal videoId={videoId} />
+            )}
 
-                {showWatchLater && !isInWatchLater && (
-                    <DropdownMenuItem
-                        onClick={() => addToWatchLater.mutate({ videoId })}
-                        disabled={addToWatchLater.isPending}
-                    >
-                        <ClockIcon className="mr-2 size-4" />
-                        Save to Watch later
+            {/* More Options Dropdown */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant={variant} size="icon" className="rounded-full">
+                        <MoreVerticalIcon />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onShare}>
+                        <ShareIcon className="mr-2 size-4" />
+                        Share
                     </DropdownMenuItem>
-                )}
 
-                {isInWatchLater && (
-                    <DropdownMenuItem
-                        onClick={() => removeFromWatchLater.mutate({ videoId })}
-                        disabled={removeFromWatchLater.isPending}
-                    >
-                        <CheckIcon className="mr-2 size-4" />
-                        Remove from Watch later
-                    </DropdownMenuItem>
-                )}
+                    {showWatchLater && !isInWatchLater && (
+                        <DropdownMenuItem
+                            onClick={() => addToWatchLater.mutate({ videoId })}
+                            disabled={addToWatchLater.isPending}
+                        >
+                            <ClockIcon className="mr-2 size-4" />
+                            Save to Watch later
+                        </DropdownMenuItem>
+                    )}
 
-                {onRemove && (
-                    <DropdownMenuItem
-                        onClick={onRemove}
-                        className="text-destructive focus:text-destructive"
-                    >
-                        <TrashIcon className="mr-2 size-4" />
-                        Remove
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    {isInWatchLater && (
+                        <DropdownMenuItem
+                            onClick={() => removeFromWatchLater.mutate({ videoId })}
+                            disabled={removeFromWatchLater.isPending}
+                        >
+                            <CheckIcon className="mr-2 size-4" />
+                            Remove from Watch later
+                        </DropdownMenuItem>
+                    )}
+
+                    {onRemove && (
+                        <DropdownMenuItem
+                            onClick={onRemove}
+                            className="text-destructive focus:text-destructive"
+                        >
+                            <TrashIcon className="mr-2 size-4" />
+                            Remove
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
     )
 }
