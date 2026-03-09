@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cva, type VariantProps } from "class-variance-authority";
+import Link from "next/link";
 
 const commentItemVariants = cva("group py-2", {
     variants: {
@@ -104,16 +105,20 @@ export const CommentItem = ({
     return (
         <div className={commentItemVariants({ variant })}>
             <div className="flex gap-3">
-                <UserAvatar
-                    size={isReply ? "sm" : "lg"}
-                    imageurl={user.imageUrl}
-                    name={user.name}
-                    className="shrink-0"
-                />
+                <Link href={`/users/${userId}`} className="shrink-0">
+                    <UserAvatar
+                        size={isReply ? "sm" : "lg"}
+                        imageurl={user.imageUrl}
+                        name={user.name}
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                    />
+                </Link>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{user.name}</span>
+                            <Link href={`/users/${userId}`} className="font-medium text-sm hover:underline">
+                                {user.name}
+                            </Link>
                             <span className="text-xs text-muted-foreground">
                                 {formatDistanceToNow(createAt, { addSuffix: true })}
                             </span>

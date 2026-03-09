@@ -1,25 +1,39 @@
 import { db } from "@/db/db";
 import { subscriptions, users } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure, baseProcedure } from "@/trpc/init";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql, desc } from "drizzle-orm";
 import { z } from "zod";
 
 export const subscriptionsRouter = createTRPCRouter({
-    getMany: protectedProcedure.query(async ({ ctx }) => {
+    getMany: protectedProcedure
+      .input(
+        z.object({
+          limit: z.number().min(1).max(100).optional(),
+        }).optional()
+      )
+      .query(async ({ ctx, input }) => {
         const { id: userId } = ctx.user;
+        const limit = input?.limit;
 
         const data = await db
-            .select({
-                creatorId: subscriptions.creatorId,
-                creator: {
-                    id: users.id,
-                    name: users.name,
-                    imageUrl: users.imageUrl,
-                },
-            })
-            .from(subscriptions)
-            .innerJoin(users, eq(subscriptions.creatorId, users.id))
-            .where(eq(subscriptions.viewerId, userId));
+          .select({
+            creatorId: subscriptions.creatorId,
+            createdAt: subscriptions.createAt,
+            creator: {
+              id: users.id,
+              name: users.name,
+              imageUrl: users.imageUrl,
+              subscriberCount: db.$count(
+                subscriptions,
+                eq(subscriptions.creatorId, users.id)
+              ),
+            },
+          })
+          .from(subscriptions)
+          .innerJoin(users, eq(subscriptions.creatorId, users.id))
+          .where(eq(subscriptions.viewerId, userId))
+          .orderBy(desc(subscriptions.createAt))
+          .limit(limit ?? 100);
 
         return data;
     }),

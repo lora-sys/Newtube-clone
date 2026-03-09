@@ -14,6 +14,7 @@ import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 
 const SubscriptionManageModalContent = () => {
   const utils = trpc.useUtils();
@@ -89,7 +90,12 @@ const SubscriptionManageModalSkeleton = () => (
 );
 
 export const SubscriptionManageModal = () => {
+  const { isSignedIn } = useAuth();
   const [open, setOpen] = useState(false);
+
+  if (!isSignedIn) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
