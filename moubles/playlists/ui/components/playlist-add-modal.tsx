@@ -43,7 +43,7 @@ export const PlaylistAddModal = ({
 
   // 添加视频到播放列表
   const addVideo = trpc.playlists.addVideo.useMutation({
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       toast.success("Added to playlist");
       utils.playlists.getManyForVideo.invalidate({ videoId });
       utils.playlists.getMany.invalidate();
@@ -147,7 +147,7 @@ export const PlaylistAddModal = ({
               No playlists yet. Create one above!
             </div>
           ) : (
-            <div className="space-y-1 max-h-64 overflow-y-auto">
+            <div className="space-y-1 max-h-[50vh] md:max-h-64 overflow-y-auto">
               {playlists?.map((playlist) => (
                 <button
                   key={playlist.id}

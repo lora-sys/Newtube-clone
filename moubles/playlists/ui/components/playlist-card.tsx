@@ -39,7 +39,10 @@ export const PlaylistCard = ({ data }: PlaylistCardProps) => {
     "grid-cols-2 grid-rows-2";
 
   return (
-    <Link href={`/playlists/${data.id}`} className="group flex flex-col gap-2">
+    <Link 
+      href={`/playlists/${data.id}`} 
+      className="group flex flex-col gap-2 min-h-[44px]" // 触摸友好
+    >
       {/* Thumbnail Grid */}
       <div className="relative aspect-video rounded-lg overflow-hidden bg-secondary border">
         {thumbnailCount > 0 ? (
@@ -55,7 +58,7 @@ export const PlaylistCard = ({ data }: PlaylistCardProps) => {
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <ListVideo className="w-6 h-6 text-muted-foreground" />
+                    <ListVideo className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -63,17 +66,17 @@ export const PlaylistCard = ({ data }: PlaylistCardProps) => {
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <ListVideo className="w-12 h-12 text-muted-foreground" />
+            <ListVideo className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground" />
           </div>
         )}
 
         {/* Video Count Badge */}
-        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-          {data.videoCount} videos
+        <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 bg-black/80 text-white text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded">
+          {data.videoCount}
         </div>
 
         {/* Visibility Badge */}
-        <div className="absolute top-2 left-2 bg-black/80 text-white p-1 rounded">
+        <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2 bg-black/80 text-white p-1 rounded">
           {data.visibility === "private" ? (
             <Lock className="w-3 h-3" />
           ) : (
@@ -83,12 +86,12 @@ export const PlaylistCard = ({ data }: PlaylistCardProps) => {
       </div>
 
       {/* Info */}
-      <div className="flex flex-col gap-1">
-        <h3 className="font-medium text-sm line-clamp-1 group-hover:text-blue-500 transition-colors">
+      <div className="flex flex-col gap-0.5 md:gap-1">
+        <h3 className="font-medium text-sm line-clamp-2 md:line-clamp-1 group-hover:text-blue-500 transition-colors">
           {data.name}
         </h3>
         {data.description && (
-          <p className="text-xs text-muted-foreground line-clamp-1">
+          <p className="text-xs text-muted-foreground line-clamp-1 hidden md:block">
             {data.description}
           </p>
         )}

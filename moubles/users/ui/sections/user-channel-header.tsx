@@ -95,7 +95,11 @@ const UserChannelHeaderSuspense = ({ userId }: UserChannelHeaderProps) => {
       </div>
 
       {/* Banner Upload Modal */}
-      <BannerUploadModal open={bannerModalOpen} onOpenChange={setBannerModalOpen} />
+      <BannerUploadModal 
+        userId={userId}
+        open={bannerModalOpen} 
+        onOpenChange={setBannerModalOpen} 
+      />
     </div>
   );
 };

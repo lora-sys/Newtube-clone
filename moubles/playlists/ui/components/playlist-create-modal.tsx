@@ -2,13 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalTrigger,
+} from "@/components/ui/responsive-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/trpc/client";
@@ -44,17 +43,17 @@ export const PlaylistCreateModal = () => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <ResponsiveModal open={open} onOpenChange={setOpen}>
+      <ResponsiveModalTrigger asChild>
         <Button variant="outline" size="sm">
           <PlusIcon className="w-4 h-4 mr-2" />
           New playlist
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create playlist</DialogTitle>
-        </DialogHeader>
+      </ResponsiveModalTrigger>
+      <ResponsiveModalContent>
+        <ResponsiveModalHeader>
+          <ResponsiveModalTitle>Create playlist</ResponsiveModalTitle>
+        </ResponsiveModalHeader>
         <div className="flex flex-col gap-4 py-4">
           <Input
             placeholder="Name"
@@ -68,15 +67,15 @@ export const PlaylistCreateModal = () => {
             rows={3}
           />
         </div>
-        <DialogFooter>
+        <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!name.trim() || createMutation.isPending}>
             Create
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 };

@@ -26,6 +26,7 @@ export const UserLink = ({
       href={`/users/${userId}`}
       className={cn(
         "flex items-center gap-2 hover:opacity-80 transition-opacity",
+        "min-h-[44px] min-w-[44px]", // 触摸友好区域
         className
       )}
     >
