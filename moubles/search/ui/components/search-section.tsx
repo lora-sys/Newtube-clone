@@ -2,6 +2,7 @@
 
 import { trpc } from "@/trpc/client";
 import { InfiniteGrid, InfiniteGridWrapper } from "@/components/ui/infinite-grid";
+import { DEFAULT_LIMIT } from "@/constants";
 
 interface SearchSectionProps {
   query: string;
@@ -18,7 +19,7 @@ export const SearchSection = ({ query, categoryId }: SearchSectionProps) => {
 
 const SearchSectionSuspense = ({ query, categoryId }: SearchSectionProps) => {
   const [results, resultsQuery] = trpc.search.getMany.useSuspenseInfiniteQuery(
-    { query, limit: 12, categoryId },
+    { query, limit: DEFAULT_LIMIT, categoryId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

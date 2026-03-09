@@ -1,5 +1,6 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { HomeView } from "@/moubles/home/ui/views/home-vew";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ const Page = async ({ searchParams }: PageProps) => {
   const categoryId = params.categoryId;
 
   void trpc.categories.getMany.prefetch();
-  void trpc.videos.getMany.prefetchInfinite({ categoryId, limit: 12 });
+  void trpc.videos.getMany.prefetchInfinite({ categoryId, limit: DEFAULT_LIMIT });
 
   return (
     <HydrateClient>

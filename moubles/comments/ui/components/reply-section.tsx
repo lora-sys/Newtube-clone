@@ -5,6 +5,7 @@ import { CommentItem } from "./comment-item";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { DEFAULT_LIMIT } from "@/constants";
 
 interface ReplySectionProps {
     parentId: string;
@@ -23,7 +24,7 @@ export const ReplySection = ({
 
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
         trpc.comments.getReplies.useInfiniteQuery(
-            { parentId, limit: 5 },
+            { parentId, limit: DEFAULT_LIMIT },
             {
                 getNextPageParam: (lastPage) => lastPage.nextCursor,
                 enabled: isExpanded,

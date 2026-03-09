@@ -2,6 +2,7 @@
 
 import { trpc } from "@/trpc/client";
 import { InfiniteGrid, InfiniteGridWrapper } from "@/components/ui/infinite-grid";
+import { DEFAULT_LIMIT } from "@/constants";
 
 interface VideoFeedSectionProps {
   categoryId?: string;
@@ -17,7 +18,7 @@ export const VideoFeedSection = ({ categoryId }: VideoFeedSectionProps) => {
 
 const VideoFeedSectionSuspense = ({ categoryId }: VideoFeedSectionProps) => {
   const [results, resultsQuery] = trpc.videos.getMany.useSuspenseInfiniteQuery(
-    { limit: 12, categoryId },
+    { limit: DEFAULT_LIMIT, categoryId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

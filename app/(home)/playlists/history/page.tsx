@@ -1,10 +1,11 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { HistorySection } from "@/moubles/playlists/ui/sections/history-section";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
 const HistoryPage = async () => {
-  void trpc.playlists.getHistory.prefetchInfinite({ limit: 12 });
+  void trpc.playlists.getHistory.prefetchInfinite({ limit: DEFAULT_LIMIT });
 
   return (
     <HydrateClient>

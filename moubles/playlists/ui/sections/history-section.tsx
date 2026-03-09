@@ -2,6 +2,7 @@
 
 import { trpc } from "@/trpc/client";
 import { InfiniteGrid, InfiniteGridWrapper } from "@/components/ui/infinite-grid";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const HistorySection = () => {
   return (
@@ -13,7 +14,7 @@ export const HistorySection = () => {
 
 const HistorySectionSuspense = () => {
   const [results, resultsQuery] = trpc.playlists.getHistory.useSuspenseInfiniteQuery(
-    { limit: 12 },
+    { limit: DEFAULT_LIMIT },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

@@ -1,11 +1,12 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { SubscriptionsSection } from "@/moubles/videos/ui/sections/subscriptions-section";
 import { SubscriptionManageModal } from "@/moubles/subscriptions/ui/components/subscription-manage-modal";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
 const SubscriptionsPage = async () => {
-  void trpc.videos.getSubscriptions.prefetchInfinite({ limit: 12 });
+  void trpc.videos.getSubscriptions.prefetchInfinite({ limit: DEFAULT_LIMIT });
   void trpc.subscriptions.getMany.prefetch();
 
   return (

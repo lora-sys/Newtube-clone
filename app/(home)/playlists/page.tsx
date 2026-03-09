@@ -3,11 +3,12 @@ import { PlaylistsSection } from "@/moubles/playlists/ui/sections/playlists-sect
 import { SystemPlaylistCard, SystemPlaylistCardSkeleton } from "@/moubles/playlists/ui/components/system-playlist-card";
 import { PlaylistCreateModal } from "@/moubles/playlists/ui/components/playlist-create-modal";
 import { Suspense } from "react";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
 const PlaylistsPage = async () => {
-  void trpc.playlists.getMany.prefetchInfinite({ limit: 12 });
+  void trpc.playlists.getMany.prefetchInfinite({ limit: DEFAULT_LIMIT });
   void trpc.playlists.getLikedPreview.prefetch();
   void trpc.playlists.getWatchLaterPreview.prefetch();
 

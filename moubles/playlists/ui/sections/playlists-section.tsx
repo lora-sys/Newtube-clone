@@ -8,6 +8,7 @@ import { InfiniteScroll } from "@/components/ui/infinite";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const PlaylistsSection = () => {
   return (
@@ -37,7 +38,7 @@ const PlaylistsSectionSkeleton = () => {
 
 const PlaylistsSectionSuspense = () => {
   const [results, resultsQuery] = trpc.playlists.getMany.useSuspenseInfiniteQuery(
-    { limit: 12 },
+    { limit: DEFAULT_LIMIT },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

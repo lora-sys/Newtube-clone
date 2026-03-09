@@ -1,10 +1,11 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { LikedSection } from "@/moubles/playlists/ui/sections/liked-section";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
 const LikedPage = async () => {
-  void trpc.playlists.getLiked.prefetchInfinite({ limit: 12 });
+  void trpc.playlists.getLiked.prefetchInfinite({ limit: DEFAULT_LIMIT });
 
   return (
     <HydrateClient>

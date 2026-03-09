@@ -1,10 +1,11 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { WatchLaterSection } from "@/moubles/playlists/ui/sections/watch-later-section";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
 const WatchLaterPage = async () => {
-  void trpc.playlists.getWatchLater.prefetchInfinite({ limit: 12 });
+  void trpc.playlists.getWatchLater.prefetchInfinite({ limit: DEFAULT_LIMIT });
 
   return (
     <HydrateClient>

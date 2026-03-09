@@ -2,6 +2,7 @@
 
 import { trpc } from "@/trpc/client";
 import { InfiniteGrid, InfiniteGridWrapper } from "@/components/ui/infinite-grid";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const WatchLaterSection = () => {
   return (
@@ -15,7 +16,7 @@ const WatchLaterSectionSuspense = () => {
   const utils = trpc.useUtils();
   
   const [results, resultsQuery] = trpc.playlists.getWatchLater.useSuspenseInfiniteQuery(
-    { limit: 12 },
+    { limit: DEFAULT_LIMIT },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

@@ -1,5 +1,6 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { SearchView } from "@/moubles/search/ui/views/search-view";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
     void trpc.search.getMany.prefetchInfinite({
       query,
       categoryId,
-      limit: 10,
+      limit: DEFAULT_LIMIT,
     });
   }
 

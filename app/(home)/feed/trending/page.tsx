@@ -1,6 +1,7 @@
 import { trpc, HydrateClient } from "@/trpc/server";
 import { TrendingSection } from "@/moubles/videos/ui/sections/trending-section";
 import { CategoriesSection } from "@/moubles/home/ui/section/categories-section";
+import { DEFAULT_LIMIT } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ interface TrendingPageProps {
 const TrendingPage = async ({ searchParams }: TrendingPageProps) => {
   const { categoryId } = await searchParams;
 
-  void trpc.videos.getTrending.prefetchInfinite({ limit: 12, categoryId });
+  void trpc.videos.getTrending.prefetchInfinite({ limit: DEFAULT_LIMIT, categoryId });
 
   return (
     <HydrateClient>
