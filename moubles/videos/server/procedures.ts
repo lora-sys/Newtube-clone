@@ -420,7 +420,7 @@ export const videosRouter = createTRPCRouter({
       }
       const duration = asset?.duration ? Math.round(asset.duration) : 0;
 
-      // TODO: find a way to revalidate trackId status and trackId as well
+      // Note: trackId and trackStatus are updated via Mux webhook (video.track.ready event)
 
       const updatedVideo = await db
         .update(videos)
@@ -556,7 +556,7 @@ export const videosRouter = createTRPCRouter({
           },
         ],
       },
-      cors_origin: "*", // TODO: in productio , set your url
+      cors_origin: process.env.MUX_CORS_ORIGIN || "*",
     });
 
     const [video] = await db

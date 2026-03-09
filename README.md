@@ -23,6 +23,14 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
 </p>
 
+<div align="center">
+<video width="640" height="360" controls poster="/logo/logo.png">
+  <source src="/demo/demo.mp4" type="video/mp4">
+  <span>Youtube clone </span>
+</video>
+
+
+</div>
 </div>
 
 ---

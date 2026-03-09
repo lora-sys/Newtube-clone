@@ -1,4 +1,4 @@
-// TODO: 填充视频分类脚本
+// Seed script for video categories
 
 import { config } from "dotenv";
 config({ path: ".env.local" });

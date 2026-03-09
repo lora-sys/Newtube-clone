@@ -69,14 +69,7 @@ export const ThumbnailGenerateModal = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("=== Form Submit Debug ===");
-    console.log("Raw values:", values);
-    console.log("Prompt value:", values.prompt);
-    console.log("Prompt length:", values.prompt?.length);
-
     const trimmedPrompt = values.prompt.trim();
-    console.log("Trimmed prompt:", trimmedPrompt);
-    console.log("Trimmed length:", trimmedPrompt.length);
 
     if (trimmedPrompt.length < 10) {
       form.setError("prompt", {
