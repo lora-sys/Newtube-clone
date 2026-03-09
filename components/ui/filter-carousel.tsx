@@ -71,7 +71,7 @@ export const FilterCarouse = ({
             >
               <Badge
                 variant={value === null ? "default" : "secondary"}
-                className="rouned-lg px-3 py-1 cursor-pointer whitespace-nowrap text-sm"
+                className="rounded-lg px-3 py-1 cursor-pointer whitespace-nowrap text-sm"
               >
                 ALL
               </Badge>

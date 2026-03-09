@@ -461,7 +461,7 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
             </div>
 
             <div className="flex flex-col gap-y-8 lg:col-span-2">
-              <div className="flex flex-col gap-4 bg-[#F9F9F9] rouned-xl overflow-hidden h-fit">
+              <div className="flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit">
                 <div className="aspect-video overflow-hidden relative">
                   <VideoPlayer
                     playbackId={video.muxPlaybackId}
@@ -505,6 +505,26 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
                           video.muxTrackStatus || "no_subtitle",
                         )}
                       </p>
+                    </div>
+                  </div>
+
+                  {/* Stats Section */}
+                  <div className="grid grid-cols-4 gap-4 pt-2 border-t">
+                    <div className="flex flex-col gap-y-1">
+                      <p className="text-muted-foreground text-xs">Views</p>
+                      <p className="text-sm font-medium">{video.viewCount}</p>
+                    </div>
+                    <div className="flex flex-col gap-y-1">
+                      <p className="text-muted-foreground text-xs">Likes</p>
+                      <p className="text-sm font-medium">{video.likeCount}</p>
+                    </div>
+                    <div className="flex flex-col gap-y-1">
+                      <p className="text-muted-foreground text-xs">Dislikes</p>
+                      <p className="text-sm font-medium">{video.dislikeCount}</p>
+                    </div>
+                    <div className="flex flex-col gap-y-1">
+                      <p className="text-muted-foreground text-xs">Comments</p>
+                      <p className="text-sm font-medium">{video.commentCount}</p>
                     </div>
                   </div>
                 </div>
