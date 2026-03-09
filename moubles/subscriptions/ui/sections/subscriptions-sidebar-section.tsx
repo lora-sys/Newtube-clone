@@ -1,36 +1,46 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
 import { UserAvatar } from "@/components/user-avatar";
 import Link from "next/link";
 import { ChevronDownIcon } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
+import { ErrorBoundary } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 
 const SUBSCRIPTIONS_LIMIT = 5;
 
 export const SubscriptionsSidebarSection = () => {
   const { isSignedIn, isLoaded } = useAuth();
-  const [mounted, setMounted] = useState(false);
+  const { openSignIn } = useClerk();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || !isLoaded) {
+  // 未加载完成时显示骨架屏
+  if (!isLoaded) {
     return <SubscriptionsSidebarSkeleton />;
   }
 
+  // 未登录时不显示订阅列表
   if (!isSignedIn) {
     return null;
   }
 
   return (
-    <Suspense fallback={<SubscriptionsSidebarSkeleton />}>
-      <SubscriptionsSidebarSectionSuspense />
-    </Suspense>
+    <ErrorBoundary
+      fallbackRender={({ error }: FallbackProps) => {
+        const err = error as Error & { shape?: { data?: { code?: string } } };
+        if (err.message?.includes("UNAUTHORIZED") || err.shape?.data?.code === "UNAUTHORIZED") {
+          openSignIn();
+        }
+        return null;
+      }}
+    >
+      <Suspense fallback={<SubscriptionsSidebarSkeleton />}>
+        <SubscriptionsSidebarSectionSuspense />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

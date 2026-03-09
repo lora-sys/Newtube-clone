@@ -5,6 +5,7 @@ import { DEFAULT_LIMIT } from "@/constants";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ui/error-boundary";
 import {
   Table,
@@ -20,15 +21,37 @@ import { format } from "date-fns";
 import { VideoThumbnail } from "@/moubles/videos/ui/components/video-thumbnail";
 import { snakeCaseToTitle } from "@/lib/utils";
 import { Globe2Icon, LockIcon } from "lucide-react";
+import { useAuth, useClerk } from "@clerk/nextjs";
+
 export const VideosSection = () => {
+  const { isSignedIn, isLoaded } = useAuth();
+  const { openSignIn } = useClerk();
+
+  // 未加载完成时显示骨架屏
+  if (!isLoaded) {
+    return <VideoSectionSkeleton />;
+  }
+
+  // 未登录时打开登录模态框并显示骨架屏
+  if (!isSignedIn) {
+    openSignIn();
+    return <VideoSectionSkeleton />;
+  }
+
+  const handleError = ({ error }: FallbackProps) => {
+    const err = error as Error & { shape?: { data?: { code?: string } } };
+    if (err.message?.includes("UNAUTHORIZED") || err.shape?.data?.code === "UNAUTHORIZED") {
+      openSignIn();
+    }
+    return <VideoSectionSkeleton />;
+  };
+
   return (
-    <Suspense fallback={<VideoSectionSkeleton />}>
-      <ErrorBoundary fallbackRender={({ error, resetErrorBoundary }) => (
-        <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} message="Failed to load videos" />
-      )}>
+    <ErrorBoundary fallbackRender={handleError}>
+      <Suspense fallback={<VideoSectionSkeleton />}>
         <VideosSectionSupense />
-      </ErrorBoundary>
-    </Suspense>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

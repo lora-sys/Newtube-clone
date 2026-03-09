@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ui/error-boundary";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,19 +57,42 @@ import { useRouter } from "next/navigation";
 import { THUMBNAIL_FLLBACK } from "../constants";
 import { ThumbnailUploadModal } from "../ui/components/thumbnail-upload-modal";
 import { ThumbnailGenerateModal } from "../ui/components/thumbnail-generate-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, useClerk } from "@clerk/nextjs";
+
 interface FormSectionProps {
   videoId: string;
 }
-import { Skeleton } from "@/components/ui/skeleton";
+
 export const FormSection = ({ videoId }: FormSectionProps) => {
+  const { isSignedIn, isLoaded } = useAuth();
+  const { openSignIn } = useClerk();
+
+  // 未加载完成时显示骨架屏
+  if (!isLoaded) {
+    return <FormSectionSkeleton />;
+  }
+
+  // 未登录时打开登录模态框并显示骨架屏
+  if (!isSignedIn) {
+    openSignIn();
+    return <FormSectionSkeleton />;
+  }
+
+  const handleError = ({ error }: FallbackProps) => {
+    const err = error as Error & { shape?: { data?: { code?: string } } };
+    if (err.message?.includes("UNAUTHORIZED") || err.shape?.data?.code === "UNAUTHORIZED") {
+      openSignIn();
+    }
+    return <FormSectionSkeleton />;
+  };
+
   return (
-    <Suspense fallback={<FormSectionSkeleton />}>
-      <ErrorBoundary fallbackRender={({ error, resetErrorBoundary }) => (
-        <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} message="Failed to load video details" />
-      )}>
+    <ErrorBoundary fallbackRender={handleError}>
+      <Suspense fallback={<FormSectionSkeleton />}>
         <FormSectionSuspence videoId={videoId} />
-      </ErrorBoundary>
-    </Suspense>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

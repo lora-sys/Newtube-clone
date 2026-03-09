@@ -6,6 +6,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
 import { ratelimit } from "@/lib/ratelimit";
+import { redis } from "@/lib/redis";
 
 // JWT session claims 类型定义
 interface SessionClaims {
@@ -14,6 +15,10 @@ interface SessionClaims {
     dbUserId?: string;
   };
 }
+
+// Redis 缓存 key 前缀
+const USER_CACHE_PREFIX = "user:dbId:";
+const CACHE_TTL = 60 * 60; // 1 小时（秒）
 
 export const createTRPCContext = cache(async () => {
   const { userId, sessionClaims } = await auth();
@@ -70,6 +75,32 @@ export const protectedProcedure = t.procedure.use(
       });
     }
 
+    // 尝试从 Redis 缓存读取
+    const cacheKey = USER_CACHE_PREFIX + ctx.clerkUserId;
+    try {
+      const cachedDbId = await redis.get<string>(cacheKey);
+      if (cachedDbId) {
+        // 速率限制检查
+        try {
+          const { success } = await ratelimit.limit(cachedDbId);
+          if (!success) {
+            throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+          }
+        } catch (error) {
+          console.error("Rate limit check failed:", error);
+        }
+
+        return opts.next({
+          ctx: {
+            ...ctx,
+            user: { id: cachedDbId },
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Redis cache read failed:", err);
+    }
+
     // ⚠️ Fallback: JWT 中没有 dbUserId，查询数据库（兼容旧用户）
     console.warn("⚠️ JWT 中没有 dbUserId，回退到数据库查询");
     
@@ -100,6 +131,13 @@ export const protectedProcedure = t.procedure.use(
           throw new Error("Failed to create user");
         }
 
+        // 写入 Redis 缓存
+        try {
+          await redis.set(cacheKey, newUser.id, { ex: CACHE_TTL });
+        } catch (err) {
+          console.error("Redis cache write failed:", err);
+        }
+
         // 把新用户的 dbUserId 存入 Clerk，下次就不用查数据库了
         await client.users.updateUserMetadata(clerkUserId, {
           publicMetadata: {
@@ -117,6 +155,13 @@ export const protectedProcedure = t.procedure.use(
         console.error("❌ 自动创建用户失败:", err);
         throw new TRPCError({ code: "UNAUTHORIZED", message: "User not found in database" });
       }
+    }
+
+    // 写入 Redis 缓存
+    try {
+      await redis.set(cacheKey, user.id, { ex: CACHE_TTL });
+    } catch (err) {
+      console.error("Redis cache write failed:", err);
     }
 
     // 为旧用户补充 dbUserId 到 JWT

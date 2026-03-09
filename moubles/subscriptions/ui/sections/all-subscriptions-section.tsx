@@ -4,27 +4,37 @@ import { trpc } from "@/trpc/client";
 import { UserLink } from "@/moubles/users/ui/components/user-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAuth, useClerk } from "@clerk/nextjs";
+import { ErrorBoundary } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 
 export const AllSubscriptionsSection = () => {
   const { isSignedIn, isLoaded } = useAuth();
-  const router = useRouter();
+  const { openSignIn } = useClerk();
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/sign-in");
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  if (!isLoaded || !isSignedIn) {
+  // 未加载完成时显示骨架屏
+  if (!isLoaded) {
     return <AllSubscriptionsSectionSkeleton />;
   }
 
+  // 未登录时打开登录模态框并显示骨架屏
+  if (!isSignedIn) {
+    openSignIn();
+    return <AllSubscriptionsSectionSkeleton />;
+  }
+
+  const handleError = ({ error }: FallbackProps) => {
+    const err = error as Error & { shape?: { data?: { code?: string } } };
+    if (err.message?.includes("UNAUTHORIZED") || err.shape?.data?.code === "UNAUTHORIZED") {
+      openSignIn();
+    }
+    return <AllSubscriptionsSectionSkeleton />;
+  };
+
   return (
-    <AllSubscriptionsSectionSuspense />
+    <ErrorBoundary fallbackRender={handleError}>
+      <AllSubscriptionsSectionSuspense />
+    </ErrorBoundary>
   );
 };
 
