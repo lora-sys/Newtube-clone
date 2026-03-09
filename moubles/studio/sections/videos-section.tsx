@@ -3,7 +3,7 @@
 import { InfiniteScroll } from "@/components/ui/infinite";
 import { DEFAULT_LIMIT } from "@/constants";
 import { trpc } from "@/trpc/client";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ui/error-boundary";
@@ -26,15 +26,23 @@ import { useAuth, useClerk } from "@clerk/nextjs";
 export const VideosSection = () => {
   const { isSignedIn, isLoaded } = useAuth();
   const { openSignIn } = useClerk();
+  const hasTriggeredSignIn = useRef(false);
+
+  // 使用 useEffect 处理副作用，避免重复调用
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && !hasTriggeredSignIn.current) {
+      hasTriggeredSignIn.current = true;
+      openSignIn();
+    }
+  }, [isLoaded, isSignedIn, openSignIn]);
 
   // 未加载完成时显示骨架屏
   if (!isLoaded) {
     return <VideoSectionSkeleton />;
   }
 
-  // 未登录时打开登录模态框并显示骨架屏
+  // 未登录时显示骨架屏
   if (!isSignedIn) {
-    openSignIn();
     return <VideoSectionSkeleton />;
   }
 

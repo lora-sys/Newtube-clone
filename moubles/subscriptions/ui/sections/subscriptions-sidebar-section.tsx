@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/client";
@@ -17,6 +17,13 @@ export const SubscriptionsSidebarSection = () => {
   const { isSignedIn, isLoaded } = useAuth();
   const { openSignIn } = useClerk();
 
+  // 使用 useEffect 处理副作用
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      // 未登录时不做任何操作，返回 null 即可
+    }
+  }, [isLoaded, isSignedIn]);
+
   // 未加载完成时显示骨架屏
   if (!isLoaded) {
     return <SubscriptionsSidebarSkeleton />;
@@ -32,7 +39,7 @@ export const SubscriptionsSidebarSection = () => {
       fallbackRender={({ error }: FallbackProps) => {
         const err = error as Error & { shape?: { data?: { code?: string } } };
         if (err.message?.includes("UNAUTHORIZED") || err.shape?.data?.code === "UNAUTHORIZED") {
-          openSignIn();
+          return null;
         }
         return null;
       }}

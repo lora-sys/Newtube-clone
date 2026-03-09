@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ui/error-boundary";
@@ -67,15 +67,23 @@ interface FormSectionProps {
 export const FormSection = ({ videoId }: FormSectionProps) => {
   const { isSignedIn, isLoaded } = useAuth();
   const { openSignIn } = useClerk();
+  const hasTriggeredSignIn = useRef(false);
+
+  // 使用 useEffect 处理副作用，避免重复调用
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && !hasTriggeredSignIn.current) {
+      hasTriggeredSignIn.current = true;
+      openSignIn();
+    }
+  }, [isLoaded, isSignedIn, openSignIn]);
 
   // 未加载完成时显示骨架屏
   if (!isLoaded) {
     return <FormSectionSkeleton />;
   }
 
-  // 未登录时打开登录模态框并显示骨架屏
+  // 未登录时显示骨架屏
   if (!isSignedIn) {
-    openSignIn();
     return <FormSectionSkeleton />;
   }
 
@@ -255,7 +263,7 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
     setIsCopied(true);
     setTimeout(() => {
       setIsCopied(false);
-    }, 20000);
+    }, 2000);
   };
 
   return (
@@ -313,7 +321,7 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
             </div>
           </div>
           <div className="grid grid-col-1 lg:grid-cols-5 gap-6">
-            <div className="sapce-y-8 lg:col-span-3">
+            <div className="space-y-8 lg:col-span-3">
               <FormField
                 control={form.control}
                 name="title"
@@ -324,7 +332,7 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
                         Title
                         <Button
                           size="icon"
-                          type="submit"
+                          type="button"
                           variant="outline"
                           className="rounded-full size-6 [&_svg]:size-3"
                           onClick={() => generateTitle.mutate({ id: videoId })}
@@ -358,7 +366,7 @@ export const FormSectionSuspence = ({ videoId }: FormSectionProps) => {
                         Description
                         <Button
                           size="icon"
-                          type="submit"
+                          type="button"
                           variant="outline"
                           className="rounded-full size-6 [&_svg]:size-3"
                           onClick={() =>
