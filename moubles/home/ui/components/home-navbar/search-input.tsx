@@ -1,11 +1,10 @@
 "use client";
 
 import { SearchIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
 
-export const SearchInput = () => {
+function SearchInputContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("query") || "";
@@ -65,5 +64,13 @@ export const SearchInput = () => {
         <SearchIcon className="size-5" />
       </button>
     </form>
+  );
+}
+
+export const SearchInput = () => {
+  return (
+    <Suspense fallback={<div className="w-full max-w-[600px] h-10 bg-muted rounded-l-full" />}>
+      <SearchInputContent />
+    </Suspense>
   );
 };

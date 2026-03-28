@@ -20,7 +20,7 @@ interface PlaylistCardProps {
 export const PlaylistCardSkeleton = () => {
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-secondary">
+      <div className="relative aspect-video rounded-xl overflow-hidden bg-secondary">
         <Skeleton className="absolute inset-0" />
       </div>
       <div className="flex flex-col gap-1">
@@ -39,12 +39,12 @@ export const PlaylistCard = ({ data }: PlaylistCardProps) => {
     "grid-cols-2 grid-rows-2";
 
   return (
-    <Link 
-      href={`/playlists/${data.id}`} 
-      className="group flex flex-col gap-2 min-h-[44px]" // 触摸友好
+    <Link
+      href={`/playlists/${data.id}`}
+      className="group flex flex-col gap-2 min-h-[44px] transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
     >
       {/* Thumbnail Grid */}
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-secondary border">
+      <div className="relative aspect-video rounded-xl overflow-hidden bg-secondary border">
         {thumbnailCount > 0 ? (
           <div className={cn("grid h-full", gridCols)}>
             {data.thumbnails.slice(0, 4).map((thumbnail, index) => (

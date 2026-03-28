@@ -132,7 +132,7 @@ export const InfiniteGridWrapper = ({
   return (
     <Suspense fallback={<InfiniteGridSkeleton />}>
       <ErrorBoundary
-        fallbackRender={({ error, resetErrorBoundary }) => (
+        fallbackRender={({ resetErrorBoundary }) => (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <p className="text-lg">{errorMessage}</p>
             <button
