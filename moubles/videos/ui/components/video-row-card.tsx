@@ -14,12 +14,12 @@ import { UserAvatar } from "@/components/user-avatar"
 
 import { VideoMenu } from "./video-menu"
 import  {VideoThumbnail} from "./video-thumbnail"
-import { VideoGetManyutput } from "../../type"
+import { VideoGetManyOutput } from "../../type"
 import { cn } from "@/lib/utils"
 
 
 
-const videoRowCardVarinats = cva("group flex min-w-0",{
+const videoRowCardVarinats = cva("group flex min-w-0 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5",{
     variants : {
         size : {
             default : "gap-4",
@@ -45,7 +45,7 @@ const thumbnailVariants = cva("relative flex-none",{
 
 
 interface  VideoRowCardProps extends VariantProps<typeof videoRowCardVarinats> {
-    data : VideoGetManyutput["items"][number];
+    data : VideoGetManyOutput["items"][number];
     onRemove ?: ()=> void;
     /** 是否在稍后观看列表中 */
     isInWatchLater?: boolean;
@@ -58,7 +58,7 @@ export const  VideoRowCardSkeleton = ({size}: {size?: "default" | "compact"}) =>
     return (
         <div className={videoRowCardVarinats({size})}>
             <div className={thumbnailVariants({size})}>
-                <Skeleton className="aspect-video rounded-lg w-full" />
+                <Skeleton className="aspect-video rounded-xl w-full" />
             </div>
             <div className="flex-1 min-w-0">
                 <Skeleton className="h-4 w-full mb-2" />
@@ -184,7 +184,7 @@ return (
             <h3
 
 
-            className={cn("font-medium line-clamp-2",
+            className={cn("font-semibold line-clamp-2",
 
 
                 size === "compact" ? "text-sm" : "text-base"

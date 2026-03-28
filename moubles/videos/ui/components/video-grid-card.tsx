@@ -7,10 +7,10 @@ import { UserAvatar } from "@/components/user-avatar";
 import { UserInfo } from "@/moubles/users/ui/components/user-info";
 import { VideoMenu } from "./video-menu";
 import { VideoThumbnail } from "./video-thumbnail";
-import { VideoGetManyutput } from "../../type";
+import { VideoGetManyOutput } from "../../type";
 
 interface VideoGridCardProps {
-    data: VideoGetManyutput["items"][number];
+    data: VideoGetManyOutput["items"][number];
     onRemove?: () => void;
     /** 是否在稍后观看列表中 */
     isInWatchLater?: boolean;
@@ -21,7 +21,7 @@ interface VideoGridCardProps {
 export const VideoGridCardSkeleton = () => {
     return (
         <div className="group">
-            <Skeleton className="aspect-video rounded-lg w-full" />
+            <Skeleton className="aspect-video rounded-xl w-full" />
             <div className="flex gap-3 mt-3">
                 <Skeleton className="size-10 rounded-full shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -57,7 +57,7 @@ export const VideoGridCard = ({
     }, [data.createAt]);
 
     return (
-        <div className="group">
+        <div className="group transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
             {/* Thumbnail */}
             <Link href={`/videos/${data.id}`}>
                 <VideoThumbnail
@@ -82,13 +82,13 @@ export const VideoGridCard = ({
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-x-2">
                         <Link href={`/videos/${data.id}`} className="flex-1 min-w-0">
-                            <h3 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                            <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors">
                                 {data.title}
                             </h3>
                         </Link>
                         <div className="shrink-0">
-                            <VideoMenu 
-                                videoId={data.id} 
+                            <VideoMenu
+                                videoId={data.id}
                                 onRemove={onRemove}
                                 isInWatchLater={isInWatchLater}
                                 onWatchLaterRemove={onWatchLaterRemove}
@@ -100,7 +100,7 @@ export const VideoGridCard = ({
                         <UserInfo size="sm" name={data.user.name} />
                     </Link>
 
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-0.5">
                         {compactViews} views · {compactLikes} likes · {relativeTime}
                     </p>
                 </div>

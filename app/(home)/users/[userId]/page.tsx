@@ -30,7 +30,7 @@ const UserPage = async ({ params }: UserPageProps) => {
         </div>
       </HydrateClient>
     );
-  } catch (error) {
+  } catch {
     notFound();
   }
 };

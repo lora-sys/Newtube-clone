@@ -15,8 +15,8 @@ interface SystemPlaylistCardProps {
 
 export const SystemPlaylistCardSkeleton = () => {
   return (
-    <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-lg bg-muted/50">
-      <Skeleton className="w-28 h-16 md:w-40 md:h-24 rounded-md shrink-0" />
+    <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-muted/50">
+      <Skeleton className="w-28 h-16 md:w-40 md:h-24 rounded-xl shrink-0" />
       <div className="flex flex-col gap-2 flex-1">
         <Skeleton className="h-4 w-20 md:w-24" />
         <Skeleton className="h-3 w-14 md:w-16" />
@@ -37,10 +37,10 @@ export const SystemPlaylistCard = ({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+      className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl bg-muted/50 hover:bg-muted/80 hover:shadow-md transition-all group"
     >
       {/* Thumbnails Grid */}
-      <div className="relative w-28 h-16 md:w-40 md:h-24 rounded-md overflow-hidden bg-secondary flex-shrink-0">
+      <div className="relative w-28 h-16 md:w-40 md:h-24 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
         {thumbnails.length > 0 ? (
           <div className="grid grid-cols-2 grid-rows-2 h-full">
             {thumbnails.slice(0, 4).map((thumbnail, index) => (
